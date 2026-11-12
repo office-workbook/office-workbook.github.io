@@ -1,0 +1,2877 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light" />
+    <link rel="icon" id="favicon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3QgeD0iOCIgeT0iNCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjU2IiByeD0iNSIgZmlsbD0iI2YxZjNmNCIgc3Ryb2tlPSIjOWFhMGE2IiBzdHJva2Utd2lkdGg9IjMiLz48bGluZSB4MT0iMTgiIHkxPSIyMSIgeDI9IjQ2IiB5Mj0iMjEiIHN0cm9rZT0iIzgwODY4YiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48bGluZSB4MT0iMTgiIHkxPSIzMiIgeDI9IjQ2IiB5Mj0iMzIiIHN0cm9rZT0iIzgwODY4YiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48bGluZSB4MT0iMTgiIHkxPSI0MyIgeDI9IjM2IiB5Mj0iNDMiIHN0cm9rZT0iIzgwODY4YiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4K" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+    <title>Work Hub</title>
+    <style>
+      :root {
+        --bg: #f3f4f6;
+        --surface: #ffffff;
+        --surface-2: #eceef1;
+        --ink: #22262d;
+        --muted: #68707c;
+        --line: #d7dae0;
+        --accent: #3c5a80;
+        --accent-ink: #ffffff;
+        --danger-ink: #8a3b2e;
+        --ok-ink: #1e6b3a;
+        --spot-bg: #fdf0f5;
+        --spot-line: #f3c3d8;
+        --spot-accent: #d81b74;
+        --shadow: 0 1px 2px rgba(20, 24, 30, 0.08);
+        --shadow-lg: 0 10px 34px rgba(20, 24, 30, 0.22);
+        color-scheme: light;
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        font-size: 15px;
+        line-height: 1.45;
+        overflow: hidden;
+      }
+      [hidden] { display: none !important; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      .btn {
+        min-height: 40px; padding: 8px 14px;
+        border: 1px solid var(--line); border-radius: 6px;
+        background: var(--surface-2); color: var(--ink);
+        cursor: pointer; white-space: nowrap;
+        display: inline-flex; align-items: center; gap: 7px;
+      }
+      .btn:active { filter: brightness(0.96); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+      .btn.small { min-height: 34px; padding: 5px 11px; font-size: 13.5px; }
+      .btn:disabled { opacity: 0.45; cursor: default; }
+      a.btn { text-decoration: none; }
+
+      /* ================= BROWSER LAYER (full screen, underneath) ===== */
+      #browserView { position: fixed; inset: 0; z-index: 1; background: #fff; }
+      #frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; }
+
+      .stage-msg {
+        position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        padding: 24px 16px; overflow: auto; background: var(--bg);
+      }
+      .note-card {
+        max-width: 430px; width: 100%;
+        background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+        box-shadow: var(--shadow);
+        padding: 26px 24px;
+      }
+      .note-card .doc-lines { border-top: 2px solid var(--line); margin-top: 14px; padding-top: 12px; }
+      .note-card .doc-lines i { display: block; height: 8px; border-radius: 4px; background: var(--surface-2); margin: 9px 0; }
+      .note-card .doc-lines i:nth-child(2) { width: 82%; }
+      .note-card .doc-lines i:nth-child(3) { width: 64%; }
+      .note-card h1 { font-size: 17px; margin: 0 0 6px; font-weight: 600; }
+      .note-card p { margin: 0; color: var(--muted); font-size: 14px; }
+      .note-card .err { color: var(--danger-ink); }
+      .note-card .actions { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; }
+      .loading-text { color: var(--muted); font-size: 14px; }
+
+      /* Floating address pill: the container's only chrome. It sits
+         quiet until hovered or focused. */
+      .addr-pill {
+        position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+        width: min(660px, calc(100% - 24px)); z-index: 6;
+        opacity: 0.45; transition: opacity 0.2s ease;
+      }
+      .addr-pill:hover, .addr-pill:focus-within { opacity: 1; }
+      .addr-pill form {
+        display: flex; gap: 6px; padding: 6px;
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: 999px; box-shadow: var(--shadow-lg);
+      }
+      #addrInput {
+        flex: 1 1 auto; min-width: 0; min-height: 38px;
+        padding: 7px 14px; border: 0; border-radius: 999px;
+        background: var(--bg); color: var(--ink);
+      }
+      #addrInput:focus { outline: 2px solid var(--accent); outline-offset: -1px; background: var(--surface); }
+      .addr-pill .btn { border-radius: 999px; min-height: 38px; }
+
+      /* The panic button: one tap slides the work hub back over. */
+      #panicBtn {
+        position: absolute; right: 14px; bottom: 14px; z-index: 6;
+        min-height: 46px; padding: 10px 18px;
+        border: 1px solid var(--line); border-radius: 999px;
+        background: var(--surface); color: var(--ink);
+        box-shadow: var(--shadow-lg);
+        font-weight: 600; cursor: pointer;
+        display: inline-flex; align-items: center; gap: 8px;
+      }
+      #panicBtn:active { filter: brightness(0.96); }
+
+      /* ================= WORK HUB (the surface; slides over) ========= */
+      #hubView {
+        position: fixed; inset: 0; z-index: 10;
+        background: var(--bg); color: var(--ink);
+        overflow-y: auto; overscroll-behavior: contain;
+        box-shadow: 0 0 44px rgba(10, 14, 20, 0.28);
+        transform: translateX(0);
+        transition: transform 0.5s cubic-bezier(0.32, 0.72, 0.24, 1), visibility 0s;
+      }
+      body.browsing #hubView {
+        transform: translateX(-103%);
+        visibility: hidden;
+        transition: transform 0.5s cubic-bezier(0.32, 0.72, 0.24, 1), visibility 0s 0.5s;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #hubView, body.browsing #hubView { transition: none; }
+      }
+      .hub-inner { max-width: 1060px; margin: 0 auto; padding: 22px 20px 30px; }
+
+      .hub-head {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+      }
+      .brand {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 16px; font-weight: 700; white-space: nowrap;
+      }
+      /* The wordmark is a genuine home link: it looks like a logo and
+         behaves like one — no box, no underline, and it navigates to
+         the hub's home view (the top of this page). */
+      a.brand { text-decoration: none; color: inherit; -webkit-tap-highlight-color: transparent; }
+      a.brand:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 6px; }
+      .brand svg { display: block; color: var(--accent); }
+      /* One ordinary word inside the Guide page's text. Visually it
+         is just a word — same font, same colour at rest, on hover and
+         after any interaction, no underline, and the cursor stays the
+         plain text cursor — with a generous invisible tap area folded
+         around it via ::after (it paints nothing, so the layout and
+         appearance of the line are untouched). It is a <button>, not
+         a link, so there is no visited state to give it away. */
+      .door-word {
+        position: relative;
+        display: inline;
+        background: none; border: 0; margin: 0; padding: 0;
+        font: inherit; color: inherit; cursor: text; line-height: inherit;
+        text-decoration: none;
+        -webkit-tap-highlight-color: transparent;
+        appearance: none; -webkit-appearance: none;
+      }
+      .door-word:hover, .door-word:active { color: inherit; text-decoration: none; }
+      .door-word::after { content: ""; position: absolute; inset: -13px -9px; }
+      .door-word:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+      /* ================= GUIDE PAGE =================
+         A routine page of the site, in the About/Contact species:
+         it slides over the hub like the hub slides over the
+         container, and its wordmark genuinely navigates home. */
+      #guideView {
+        position: fixed; inset: 0; z-index: 12;
+        background:
+          radial-gradient(1100px 520px at 85% -8%, rgba(125, 190, 255, 0.20), rgba(125, 190, 255, 0) 62%),
+          radial-gradient(900px 480px at -10% 22%, rgba(255, 205, 150, 0.16), rgba(255, 205, 150, 0) 60%),
+          linear-gradient(180deg, #f7fafc 0%, #edf1f6 55%, #e9eef4 100%);
+        color: var(--ink);
+        overflow-y: auto; overscroll-behavior: contain;
+        box-shadow: 0 0 44px rgba(10, 14, 20, 0.28);
+        transform: translateX(103%);
+        visibility: hidden;
+        transition: transform 0.5s cubic-bezier(0.32, 0.72, 0.24, 1), visibility 0s 0.5s;
+      }
+      body.guide-open #guideView {
+        transform: translateX(0);
+        visibility: visible;
+        transition: transform 0.5s cubic-bezier(0.32, 0.72, 0.24, 1), visibility 0s;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #guideView, body.guide-open #guideView { transition: none; }
+      }
+      .guide-inner { max-width: 780px; margin: 0 auto; padding: 26px 28px 40px; }
+      .guide-inner h1 {
+        font-family: "Sora", "Manrope", sans-serif;
+        font-size: 27px; font-weight: 800; letter-spacing: -0.025em; line-height: 1.18;
+        margin: 16px 0 8px;
+      }
+      .guide-lede { color: var(--muted); font-size: 15.5px; line-height: 1.6; margin: 0 0 8px; }
+      .guide-inner section { margin-top: 20px; }
+      .guide-inner h2 {
+        font-family: "Sora", "Manrope", sans-serif;
+        font-size: 18px; font-weight: 700; letter-spacing: -0.012em; margin: 0 0 8px;
+      }
+      .guide-inner p { margin: 0 0 10px; line-height: 1.65; color: #333a45; }
+      .guide-inner p:last-child { margin-bottom: 0; }
+      .guide-foot {
+        margin-top: 26px; padding-top: 12px; border-top: 1px solid var(--line);
+        color: var(--muted); font-size: 13.5px;
+      }
+      .hub-foot a { color: inherit; text-decoration: none; }
+      .hub-foot a:hover { text-decoration: underline; }
+      .hub-foot a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+      /* While the Guide page is up, the hub's bottom navs slide away
+         with the hub, exactly as they do under the container. */
+      body.guide-open #dock {
+        transform: translateX(calc(-50% - 104vw));
+        visibility: hidden;
+        transition: transform 0.5s cubic-bezier(0.32, 0.72, 0.24, 1), visibility 0s 0.5s;
+      }
+      body.guide-open #glassNav {
+        transform: translateX(-110vw);
+        visibility: hidden;
+        transition: transform 0.5s cubic-bezier(0.32, 0.72, 0.24, 1), visibility 0s 0.5s;
+      }
+      @media (max-width: 620px) {
+        .guide-inner { padding: 18px 16px 36px; }
+        .guide-inner h1 { font-size: 24px; }
+      }
+      .auto-toggle {
+        margin-left: auto;
+        display: inline-flex; align-items: center; gap: 7px;
+        min-height: 34px; padding: 4px 6px;
+        font-size: 13px; color: var(--muted); cursor: pointer;
+        user-select: none; -webkit-user-select: none;
+      }
+      .auto-toggle input { width: 17px; height: 17px; margin: 0; accent-color: var(--accent); }
+
+      .hub-date { margin: 16px 0 2px; color: var(--muted); font-size: 13.5px; }
+      .hub-title { margin: 0 0 16px; font-size: 25px; font-weight: 700; letter-spacing: -0.01em; }
+
+      .search-row { display: flex; gap: 8px; max-width: 620px; margin-bottom: 26px; }
+      .search-row input {
+        flex: 1 1 auto; min-width: 0; min-height: 44px;
+        padding: 9px 14px;
+        border: 1px solid var(--line); border-radius: 8px;
+        background: var(--surface); color: var(--ink);
+      }
+      .search-row input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+      .search-row .btn { min-height: 44px; }
+
+      .hub-section { margin-bottom: 28px; }
+      .hub-section > h2 { font-size: 16.5px; font-weight: 700; margin: 0 0 12px; }
+
+      /* ---------- quick links ---------- */
+      .link-grid {
+        display: grid; gap: 10px;
+        grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+      }
+      .tile {
+        display: flex; flex-direction: column; gap: 3px;
+        padding: 14px; min-height: 96px;
+        background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+        box-shadow: var(--shadow);
+        text-decoration: none; color: var(--ink);
+      }
+      .tile-ic {
+        width: 36px; height: 36px; border-radius: 9px; margin-bottom: 5px;
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-weight: 700; font-size: 14px; letter-spacing: 0.01em;
+      }
+      .tile-name { font-weight: 600; font-size: 14.5px; }
+      .tile-sub { color: var(--muted); font-size: 12.5px; }
+      .tile-note { color: var(--muted); font-size: 11.5px; border-top: 1px solid var(--line); padding-top: 6px; margin-top: auto; }
+      .tile { min-height: 132px; }
+      .links-intro { margin: -4px 0 14px; color: var(--muted); font-size: 13.5px; max-width: 760px; }
+      .links-foot { margin: 12px 0 0; color: var(--muted); font-size: 12.5px; max-width: 860px; }
+
+      /* Dribbble spotlight: spans two columns, tinted, with room to breathe. */
+      .spot-card {
+        grid-column: span 2;
+        display: flex; gap: 16px; align-items: center;
+        padding: 20px; min-height: 96px;
+        background: var(--spot-bg); border: 1px solid var(--spot-line); border-radius: 10px;
+        box-shadow: var(--shadow);
+        text-decoration: none; color: var(--ink);
+      }
+      .spot-ic {
+        flex: 0 0 auto; width: 58px; height: 58px; border-radius: 50%;
+        background: var(--spot-accent); color: #fff;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .spot-body { min-width: 0; }
+      .spot-kicker { font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--spot-accent); }
+      .spot-name { font-size: 19px; font-weight: 700; margin: 1px 0 3px; }
+      .spot-text { color: var(--muted); font-size: 13.5px; margin: 0; }
+      .spot-url { color: var(--spot-accent); font-size: 12.5px; font-weight: 600; }
+
+      /* ---------- tools ---------- */
+      .card {
+        background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+        box-shadow: var(--shadow); padding: 18px;
+      }
+      .card h3 { margin: 0 0 4px; font-size: 15.5px; font-weight: 700; }
+      .card .sub { margin: 0 0 14px; color: var(--muted); font-size: 13.5px; }
+      .tool-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-top: 10px; }
+
+      /* converter */
+      .privacy-note {
+        display: flex; gap: 8px; align-items: flex-start;
+        background: var(--surface-2); border-radius: 8px;
+        padding: 10px 12px; margin-bottom: 16px;
+        font-size: 13.5px; font-weight: 600;
+      }
+      .privacy-note svg { flex: 0 0 auto; margin-top: 1px; color: var(--ok-ink); }
+      .conv-block { border-top: 1px solid var(--line); padding-top: 16px; margin-top: 16px; }
+      .conv-block:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+      .conv-block h4 { margin: 0 0 10px; font-size: 14px; font-weight: 700; }
+      .drop-zone {
+        border: 1.5px dashed var(--line); border-radius: 10px;
+        padding: 20px 16px; text-align: center; color: var(--muted);
+        font-size: 14px; cursor: pointer; background: var(--bg);
+      }
+      .drop-zone.drag { border-color: var(--accent); color: var(--ink); }
+      .drop-zone strong { color: var(--ink); }
+      .conv-controls { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: end; margin-top: 14px; }
+      .field { display: flex; flex-direction: column; gap: 5px; font-size: 13px; color: var(--muted); }
+      .field select, .field input[type="text"] {
+        min-height: 38px; padding: 6px 10px;
+        border: 1px solid var(--line); border-radius: 6px;
+        background: var(--surface); color: var(--ink);
+      }
+      .field input[type="range"] { width: 150px; accent-color: var(--accent); }
+      .conv-result { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-top: 14px; }
+      .conv-result img { width: 84px; height: 84px; object-fit: contain; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); }
+      .conv-stats { font-size: 13.5px; color: var(--muted); }
+      .conv-stats strong { color: var(--ink); }
+      .status-line { font-size: 13px; min-height: 18px; margin-top: 10px; color: var(--muted); }
+      .status-line.err { color: var(--danger-ink); }
+      .status-line.ok { color: var(--ok-ink); }
+
+      .text-tools { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+      .text-tools textarea {
+        width: 100%; min-height: 128px; resize: vertical;
+        padding: 10px 12px;
+        border: 1px solid var(--line); border-radius: 8px;
+        background: var(--bg); color: var(--ink);
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px;
+      }
+      .text-tools textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; background: var(--surface); }
+      .tool-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+      .count-line { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+
+      /* timer */
+      .timer-display {
+        font-size: 52px; font-weight: 700; text-align: center;
+        font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+        padding: 8px 0 2px;
+      }
+      .timer-status { text-align: center; color: var(--muted); font-size: 13.5px; min-height: 20px; }
+      .timer-modes { display: flex; gap: 6px; justify-content: center; margin: 10px 0; flex-wrap: wrap; }
+      .timer-modes .btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+      .timer-actions { display: flex; gap: 8px; justify-content: center; }
+
+      /* scratchpad */
+      .pad-area {
+        width: 100%; min-height: 168px; resize: vertical;
+        padding: 10px 12px;
+        border: 1px solid var(--line); border-radius: 8px;
+        background: var(--bg); color: var(--ink);
+      }
+      .pad-area:focus { outline: 2px solid var(--accent); outline-offset: -1px; background: var(--surface); }
+
+      /* clocks */
+      .clock-list { display: flex; flex-direction: column; }
+      .clock-row {
+        display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+        padding: 9px 0; border-bottom: 1px solid var(--line);
+      }
+      .clock-row:last-child { border-bottom: 0; }
+      .clock-city { color: var(--muted); font-size: 14px; }
+      .clock-time { font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }
+      .clock-day { color: var(--muted); font-size: 12.5px; margin-left: 8px; }
+
+      .hub-foot {
+        margin-top: 6px; padding-top: 16px; border-top: 1px solid var(--line);
+        color: var(--muted); font-size: 13px;
+        display: flex; flex-wrap: wrap; gap: 4px 18px; justify-content: space-between;
+      }
+      /* ================= SECTION NAV =================
+         Desktop: a floating macOS-style dock with magnification.
+         Mobile: a liquid-glass slider whose lens glides (and can be
+         dragged) between sections.
+         ANCHORING: both navs are direct children of <body>, NOT of
+         #hubView. #hubView is a scroll container with a transform,
+         and a transformed ancestor becomes the containing block for
+         fixed-position descendants — inside it, position:fixed
+         degrades to absolute-like behaviour, so the bar was laid out
+         against the hub's scrolling content and scrolled away with
+         it instead of staying pinned to the bottom of the screen.
+         As body-level siblings, fixed anchors them to the viewport
+         itself, no matter how far the hub scrolls. They still slide
+         away with the hub when the browser is uncovered, via the
+         body.browsing rules below. */
+      .hub-inner { padding-bottom: 118px; }
+      #dock, #glassNav {
+        transition: transform 0.5s cubic-bezier(0.32, 0.72, 0.24, 1), visibility 0s;
+      }
+      body.browsing #dock {
+        transform: translateX(calc(-50% - 104vw));
+        visibility: hidden;
+        transition: transform 0.5s cubic-bezier(0.32, 0.72, 0.24, 1), visibility 0s 0.5s;
+      }
+      body.browsing #glassNav {
+        transform: translateX(-110vw);
+        visibility: hidden;
+        transition: transform 0.5s cubic-bezier(0.32, 0.72, 0.24, 1), visibility 0s 0.5s;
+      }
+
+      /* ---------- desktop dock ---------- */
+      #dock {
+        position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+        display: flex; flex-direction: row; align-items: flex-end; gap: 8px;
+        padding: 8px 12px 12px;
+        background: rgba(255, 255, 255, 0.68);
+        -webkit-backdrop-filter: blur(14px) saturate(1.6);
+        backdrop-filter: blur(14px) saturate(1.6);
+        border: 1px solid rgba(31, 41, 55, 0.10);
+        border-radius: 20px;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.85),
+          0 14px 38px rgba(31, 41, 55, 0.18);
+        z-index: 60;
+      }
+      #dock .app {
+        position: relative;
+        width: 46px; height: 46px; border: 0; padding: 0;
+        display: grid; place-items: center;
+        border-radius: 12px; color: #0e0e12;
+        cursor: pointer;
+        transform-origin: bottom center; will-change: transform;
+      }
+      #dock .app svg { width: 24px; height: 24px; pointer-events: none; }
+      #dock .app .tip {
+        position: absolute; bottom: calc(100% + 12px); left: 50%;
+        transform: translateX(-50%) translateY(3px);
+        padding: 4px 10px; border-radius: 7px;
+        background: rgba(255, 255, 255, 0.96); color: #22262d;
+        border: 1px solid rgba(31, 41, 55, 0.12);
+        box-shadow: 0 4px 14px rgba(31, 41, 55, 0.14);
+        font-size: 12.5px; font-weight: 600; white-space: nowrap;
+        opacity: 0; pointer-events: none;
+        transition: opacity 0.15s ease, transform 0.15s ease;
+      }
+      #dock .app:hover .tip, #dock .app:focus-visible .tip {
+        opacity: 1; transform: translateX(-50%) translateY(0);
+      }
+      #dock .app:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+      #dock .app .dot {
+        position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+        width: 4px; height: 4px; border-radius: 50%;
+        background: rgba(20, 24, 30, 0.6);
+        opacity: 0; transition: opacity 0.2s ease;
+      }
+      #dock .app.is-active .dot { opacity: 1; }
+
+      /* ---------- mobile liquid-glass slider ---------- */
+      #glassNav {
+        position: fixed; left: 12px; right: 12px;
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        height: 66px; padding: 6px;
+        display: none;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.13) 55%, rgba(255, 255, 255, 0.22));
+        -webkit-backdrop-filter: blur(18px) saturate(1.7);
+        backdrop-filter: blur(18px) saturate(1.7);
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.55),
+          inset 0 -1px 0 rgba(255, 255, 255, 0.12),
+          0 12px 32px rgba(10, 14, 20, 0.28);
+        z-index: 60;
+        touch-action: none;
+        user-select: none; -webkit-user-select: none;
+      }
+      .glass-lens {
+        position: absolute; top: 6px; bottom: 6px; left: 0; width: 60px;
+        border-radius: 999px;
+        background: linear-gradient(160deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.22));
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.8),
+          inset 0 -6px 12px rgba(255, 255, 255, 0.18),
+          0 4px 14px rgba(10, 14, 20, 0.18);
+        transition: transform 0.45s cubic-bezier(0.3, 1.35, 0.4, 1), width 0.3s ease;
+        pointer-events: none;
+      }
+      .glass-items { position: relative; display: flex; height: 100%; }
+      .gnav-item {
+        position: relative; z-index: 1;
+        flex: 1 1 0; min-width: 0; height: 100%;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+        background: none; border: 0; padding: 0; cursor: pointer;
+        color: var(--muted);
+        transition: color 0.25s ease;
+      }
+      .gnav-item svg { width: 21px; height: 21px; }
+      .gnav-item span { font-size: 10px; font-weight: 600; letter-spacing: 0.01em; }
+      .gnav-item.is-active { color: var(--ink); }
+      .gnav-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 999px; }
+
+      @media (max-width: 860px) {
+        #dock { display: none; }
+        #glassNav { display: block; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .glass-lens { transition: none; }
+        #dock .app .tip { transition: none; }
+        #dock, #glassNav, body.browsing #dock, body.browsing #glassNav { transition: none; }
+      }
+
+      @media (max-width: 620px) {
+        .hub-inner { padding: 16px 14px 24px; }
+        .hub-title { font-size: 21px; }
+        .link-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+        .text-tools { grid-template-columns: 1fr; }
+        .auto-toggle { margin-left: 0; }
+        .timer-display { font-size: 44px; }
+      }
+      @media (max-width: 460px) {
+        .spot-card { grid-column: span 1; flex-direction: column; align-items: flex-start; }
+      }
+    </style>
+    <style>
+      /* ============ DESIGN REFINEMENT — daylight, portfolio grade ====
+         Sora for display, Manrope for UI. An 8-point spacing rhythm,
+         light glass surfaces with a bright top edge, layered soft
+         shadows, and spring-timed micro-interactions throughout. */
+      :root {
+        --bg: #eef2f7;
+        --surface: #ffffff;
+        --surface-2: #e8edf3;
+        --ink: #1c2330;
+        --muted: #5d6878;
+        --line: #d9dfe8;
+        --accent: #2f62b8;
+        --glass-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.68));
+        --glass-ring: 0 0 0 1px rgba(28, 35, 48, 0.05);
+        --glass-shadow: 0 1px 2px rgba(28, 35, 48, 0.05), 0 14px 34px -12px rgba(28, 35, 48, 0.14);
+        --ease-spring: cubic-bezier(0.34, 1.45, 0.44, 1);
+        --ease-out: cubic-bezier(0.22, 0.9, 0.3, 1);
+      }
+      ::selection { background: rgba(47, 98, 184, 0.2); }
+      body {
+        font-family: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 15.5px;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+      #hubView {
+        background:
+          radial-gradient(1100px 520px at 85% -8%, rgba(125, 190, 255, 0.20), rgba(125, 190, 255, 0) 62%),
+          radial-gradient(900px 480px at -10% 22%, rgba(255, 205, 150, 0.16), rgba(255, 205, 150, 0) 60%),
+          linear-gradient(180deg, #f7fafc 0%, #edf1f6 55%, #e9eef4 100%);
+      }
+      #hubView::-webkit-scrollbar { width: 10px; }
+      #hubView::-webkit-scrollbar-thumb { background: rgba(28, 35, 48, 0.18); border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
+      #hubView::-webkit-scrollbar-track { background: transparent; }
+      .hub-inner { max-width: 1100px; padding: 34px 28px 132px; }
+      .hub-section { margin-bottom: 40px; }
+      .hub-section > h2 {
+        font-family: "Sora", "Manrope", sans-serif;
+        font-size: 20px; font-weight: 700; letter-spacing: -0.015em;
+        margin-bottom: 14px;
+      }
+      .brand { font-family: "Sora", "Manrope", sans-serif; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+      .brand svg { color: var(--accent); }
+      .hub-date { font-size: 13px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--accent); margin-top: 22px; }
+      .hub-title {
+        font-family: "Sora", "Manrope", sans-serif;
+        font-size: 34px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.16;
+        margin-bottom: 20px;
+      }
+      .links-intro { font-size: 14px; line-height: 1.55; }
+
+      /* buttons & inputs: pill actions, soft rings, springy presses */
+      .btn {
+        border-radius: 999px; font-weight: 600;
+        border-color: rgba(28, 35, 48, 0.1);
+        background: linear-gradient(180deg, #ffffff, #eef1f5);
+        box-shadow: 0 1px 2px rgba(28, 35, 48, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        transition: transform 0.28s var(--ease-spring), box-shadow 0.25s var(--ease-out), filter 0.2s ease, background 0.2s ease;
+      }
+      .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px -4px rgba(28, 35, 48, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.9); }
+      .btn:active { transform: translateY(0) scale(0.97); filter: brightness(0.98); }
+      .btn:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, .drop-zone:focus-visible {
+        outline: none; box-shadow: 0 0 0 4px rgba(47, 98, 184, 0.22);
+      }
+      .btn.primary {
+        background: linear-gradient(180deg, #3f74c6, #2f62b8);
+        border-color: rgba(24, 58, 112, 0.35); color: #fff;
+        box-shadow: 0 6px 16px -6px rgba(47, 98, 184, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+      }
+      .btn.primary:hover { box-shadow: 0 9px 20px -6px rgba(47, 98, 184, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.28); }
+      input, select, textarea { transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease; }
+      .search-row input, .field select, .field input[type="text"], .text-tools textarea, .pad-area {
+        border-radius: 14px; border-color: rgba(28, 35, 48, 0.1);
+        background: rgba(255, 255, 255, 0.85);
+        box-shadow: inset 0 1px 3px rgba(28, 35, 48, 0.05);
+      }
+      #addrInput { background: rgba(240, 244, 248, 0.85); }
+      .search-row input { min-height: 48px; padding: 10px 18px; border-radius: 999px; }
+      .search-row .btn { min-height: 48px; padding: 10px 22px; }
+
+      /* cards: light glass, bright top edge, deep soft shadow */
+      .card {
+        border-radius: 20px; padding: 24px;
+        background: var(--glass-bg);
+        -webkit-backdrop-filter: blur(16px) saturate(1.45);
+        backdrop-filter: blur(16px) saturate(1.45);
+        border: 1px solid rgba(255, 255, 255, 0.75);
+        box-shadow: var(--glass-ring), var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      }
+      .card h3 { font-family: "Sora", "Manrope", sans-serif; font-size: 17.5px; font-weight: 700; letter-spacing: -0.012em; }
+      .card .sub { font-size: 14px; line-height: 1.55; }
+      .conv-block h4 { font-family: "Sora", "Manrope", sans-serif; font-size: 15px; letter-spacing: -0.01em; }
+      .tool-grid { gap: 14px; margin-top: 14px; }
+      .privacy-note {
+        border-radius: 14px; padding: 12px 14px;
+        background: linear-gradient(165deg, rgba(214, 243, 224, 0.75), rgba(233, 248, 238, 0.6));
+        border: 1px solid rgba(30, 107, 58, 0.14);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      }
+      .drop-zone {
+        border-radius: 16px; padding: 26px 18px;
+        border: 1.5px dashed rgba(47, 98, 184, 0.35);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.65), rgba(240, 245, 250, 0.5));
+        transition: border-color 0.2s ease, background 0.2s ease, transform 0.28s var(--ease-spring);
+      }
+      .drop-zone:hover { border-color: rgba(47, 98, 184, 0.6); transform: translateY(-1px); }
+      .drop-zone.drag { border-color: var(--accent); background: rgba(219, 233, 250, 0.6); }
+
+      /* resource tiles & spotlight */
+      .link-grid { gap: 14px; }
+      .tile {
+        border-radius: 18px; padding: 18px; min-height: 140px;
+        background: var(--glass-bg);
+        -webkit-backdrop-filter: blur(14px) saturate(1.4);
+        backdrop-filter: blur(14px) saturate(1.4);
+        border: 1px solid rgba(255, 255, 255, 0.75);
+        box-shadow: var(--glass-ring), 0 1px 2px rgba(28, 35, 48, 0.05), 0 10px 24px -12px rgba(28, 35, 48, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        transition: transform 0.35s var(--ease-spring), box-shadow 0.3s var(--ease-out);
+      }
+      .tile:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--glass-ring), 0 2px 3px rgba(28, 35, 48, 0.05), 0 20px 36px -14px rgba(28, 35, 48, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      }
+      .tile:active { transform: translateY(-1px) scale(0.99); }
+      .tile:focus-visible, .spot-card:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(47, 98, 184, 0.25); }
+      .tile-ic {
+        width: 40px; height: 40px; border-radius: 12px; margin-bottom: 8px;
+        font-family: "Sora", "Manrope", sans-serif; font-size: 14.5px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -8px 14px rgba(0, 0, 0, 0.12), 0 4px 10px -4px rgba(28, 35, 48, 0.35);
+      }
+      .tile-name { font-family: "Sora", "Manrope", sans-serif; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+      .tile-sub { font-size: 13px; line-height: 1.5; }
+      .spot-card {
+        border-radius: 20px; padding: 24px;
+        background: linear-gradient(140deg, rgba(255, 228, 240, 0.92), rgba(253, 240, 245, 0.75) 60%, rgba(255, 255, 255, 0.7));
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: var(--glass-ring), 0 1px 2px rgba(28, 35, 48, 0.05), 0 16px 32px -14px rgba(216, 27, 116, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        transition: transform 0.35s var(--ease-spring), box-shadow 0.3s var(--ease-out);
+      }
+      .spot-card:hover { transform: translateY(-4px); box-shadow: var(--glass-ring), 0 24px 42px -16px rgba(216, 27, 116, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.95); }
+      .spot-ic { box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35), inset 0 -10px 18px rgba(0, 0, 0, 0.14), 0 8px 18px -6px rgba(216, 27, 116, 0.5); }
+      .spot-name { font-family: "Sora", "Manrope", sans-serif; font-size: 21px; letter-spacing: -0.015em; }
+
+      /* timer, clocks, misc */
+      .timer-display { font-family: "Sora", "Manrope", sans-serif; font-size: 60px; font-weight: 800; letter-spacing: -0.03em; }
+      .timer-modes .btn[aria-pressed="true"] { background: linear-gradient(180deg, #3f74c6, #2f62b8); border-color: rgba(24, 58, 112, 0.35); color: #fff; }
+      .clock-time { font-family: "Sora", "Manrope", sans-serif; letter-spacing: -0.01em; }
+      .clock-row { padding: 11px 0; }
+      .hub-foot { font-size: 13.5px; padding-top: 20px; }
+      .auto-toggle { font-weight: 600; }
+
+      /* container chrome: daylight glass too */
+      .note-card {
+        border-radius: 20px; padding: 30px 28px;
+        background: var(--glass-bg);
+        -webkit-backdrop-filter: blur(16px) saturate(1.45);
+        backdrop-filter: blur(16px) saturate(1.45);
+        border: 1px solid rgba(255, 255, 255, 0.75);
+        box-shadow: var(--glass-ring), var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      }
+      .note-card h1 { font-family: "Sora", "Manrope", sans-serif; font-size: 19px; letter-spacing: -0.015em; }
+      .stage-msg { background: linear-gradient(180deg, #f7fafc, #e9eef4); }
+      .addr-pill form {
+        background: rgba(255, 255, 255, 0.78);
+        -webkit-backdrop-filter: blur(16px) saturate(1.5);
+        backdrop-filter: blur(16px) saturate(1.5);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 12px 32px -10px rgba(28, 35, 48, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      }
+      #panicBtn {
+        border-radius: 999px; font-family: "Manrope", sans-serif;
+        background: rgba(255, 255, 255, 0.82);
+        -webkit-backdrop-filter: blur(16px) saturate(1.5);
+        backdrop-filter: blur(16px) saturate(1.5);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 12px 30px -10px rgba(28, 35, 48, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        transition: transform 0.28s var(--ease-spring), box-shadow 0.25s var(--ease-out);
+      }
+      #panicBtn:hover { transform: translateY(-2px); }
+      #panicBtn:active { transform: scale(0.97); }
+
+      /* dock: light glass, weighted spring feel, jewel tiles */
+      #dock {
+        border-radius: 26px; padding: 10px 14px 14px; gap: 10px;
+        background: linear-gradient(170deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.55));
+        -webkit-backdrop-filter: blur(20px) saturate(1.6);
+        backdrop-filter: blur(20px) saturate(1.6);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.95),
+          inset 0 -1px 0 rgba(28, 35, 48, 0.05),
+          0 20px 44px -14px rgba(28, 35, 48, 0.3);
+      }
+      #dock .app {
+        width: 48px; height: 48px; border-radius: 14px;
+        box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.5), inset 0 -9px 15px rgba(0, 0, 0, 0.13), 0 5px 12px -5px rgba(28, 35, 48, 0.4);
+      }
+      #dock .app .tip {
+        font-family: "Manrope", sans-serif;
+        background: rgba(255, 255, 255, 0.94);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border-radius: 9px; padding: 5px 11px;
+        transition: opacity 0.18s ease, transform 0.3s var(--ease-spring);
+      }
+      #dock .app .dot { bottom: -9px; width: 5px; height: 5px; background: var(--accent); }
+
+      /* mobile slider: LIQUID glass, not frosted. Frosting is what
+         heavy white opacity + heavy blur does — it milks the glass
+         opaque. Liquid glass is the opposite recipe: the pane itself
+         is nearly clear (a whisper of white and a cool tint at the
+         edges), the backdrop stays recognisable — only lightly
+         blurred, strongly saturated and lifted — and all the
+         "glassiness" is carried by light behaviour instead: a crisp
+         specular line on the top rim, a bright refractive caustic
+         along the bottom, glossy end-caps, and a deep soft contact
+         shadow. Placement and size are untouched. */
+      #glassNav {
+        height: 70px;
+        overflow: hidden;
+        background:
+          radial-gradient(120% 190% at 12% -30%, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0) 55%),
+          radial-gradient(120% 190% at 88% -30%, rgba(190, 220, 255, 0.28), rgba(255, 255, 255, 0) 55%),
+          linear-gradient(115deg, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0.05) 38%, rgba(168, 205, 248, 0.10) 64%, rgba(255, 255, 255, 0.14));
+        -webkit-backdrop-filter: blur(9px) saturate(2.1) brightness(1.09) contrast(1.05);
+        backdrop-filter: blur(9px) saturate(2.1) brightness(1.09) contrast(1.05);
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        box-shadow:
+          inset 0 1.5px 1px rgba(255, 255, 255, 0.95),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+          inset 0 -11px 18px rgba(255, 255, 255, 0.28),
+          inset 0 -1.5px 1px rgba(255, 255, 255, 0.65),
+          inset 14px 0 22px -12px rgba(255, 255, 255, 0.55),
+          inset -14px 0 22px -12px rgba(255, 255, 255, 0.55),
+          0 16px 38px -12px rgba(28, 35, 48, 0.32);
+      }
+      /* Specular sweep across the upper half — the sheet of light a
+         real liquid-glass surface throws back. Sits under the lens
+         and the items (both paint after it in DOM order). */
+      #glassNav::before {
+        content: ""; position: absolute; inset: 0; border-radius: inherit;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.10) 42%, rgba(255, 255, 255, 0) 62%);
+        pointer-events: none;
+      }
+      .glass-lens {
+        overflow: hidden;
+        background:
+          radial-gradient(130% 170% at 18% -20%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 52%),
+          linear-gradient(155deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.07) 46%, rgba(168, 205, 248, 0.16) 82%, rgba(255, 255, 255, 0.24));
+        -webkit-backdrop-filter: blur(3px) saturate(2.2) brightness(1.12) contrast(1.06);
+        backdrop-filter: blur(3px) saturate(2.2) brightness(1.12) contrast(1.06);
+        border: 1px solid rgba(255, 255, 255, 0.75);
+        box-shadow:
+          inset 0 1.5px 1px rgba(255, 255, 255, 0.98),
+          inset 0 -9px 15px rgba(255, 255, 255, 0.30),
+          inset 0 -1.5px 1px rgba(255, 255, 255, 0.7),
+          inset 7px 0 12px -6px rgba(255, 255, 255, 0.65),
+          inset -7px 0 12px -6px rgba(255, 255, 255, 0.65),
+          0 6px 18px -6px rgba(28, 35, 48, 0.28);
+        transition: transform 0.55s cubic-bezier(0.3, 1.5, 0.36, 1), width 0.35s var(--ease-out);
+      }
+      /* The lens's own highlight: a soft glossy crescent hugging its
+         top edge, so the selector reads as a bead of clear glass
+         riding in the track rather than a frosted disc. */
+      .glass-lens::before {
+        content: ""; position: absolute; left: 14%; right: 14%; top: 2.5px; height: 46%;
+        border-radius: 999px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0));
+        pointer-events: none;
+      }
+      .gnav-item { font-family: "Manrope", sans-serif; }
+      .gnav-item span { font-size: 10.5px; font-weight: 700; }
+
+      @media (max-width: 620px) {
+        .hub-inner { padding: 22px 16px 124px; }
+        .hub-title { font-size: 27px; }
+        .timer-display { font-size: 50px; }
+        .card { padding: 20px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .btn, .tile, .spot-card, .drop-zone, #panicBtn, #dock .app .tip { transition: none; }
+        .tile:hover, .spot-card:hover, .btn:hover, #panicBtn:hover { transform: none; }
+      }
+
+      /* ---------- split-screen panes ----------
+         The browser layer is a flex row (or column, in portrait) of
+         two panes with a draggable divider between them. Both panes
+         live inside #browserView, so the panic slide covers both. */
+      #panes { position: absolute; inset: 0; display: flex; flex-direction: row; }
+      #panes.stacked { flex-direction: column; }
+      .pane {
+        position: relative; flex: 1 1 0; min-width: 0; min-height: 0;
+        overflow: hidden; background: #fff;
+      }
+      .pane iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; }
+      .pane.is-target { box-shadow: inset 0 0 0 2px rgba(47, 98, 184, 0.55); }
+      #panes.dragging iframe { pointer-events: none; }
+      #divider {
+        flex: 0 0 16px; z-index: 5;
+        display: flex; align-items: center; justify-content: center;
+        cursor: col-resize; touch-action: none;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.55), rgba(214, 222, 233, 0.85), rgba(255, 255, 255, 0.55));
+        box-shadow: inset 0 0 0 1px rgba(28, 35, 48, 0.07);
+      }
+      #panes.stacked #divider {
+        cursor: row-resize;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(214, 222, 233, 0.85), rgba(255, 255, 255, 0.55));
+      }
+      #divider .grip {
+        width: 4px; height: 46px; border-radius: 2px;
+        background: rgba(28, 35, 48, 0.3);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
+      }
+      #panes.stacked #divider .grip { width: 46px; height: 4px; }
+      #divider:hover .grip, #panes.dragging #divider .grip { background: var(--accent); }
+      #divider:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+      .pane-msg {
+        position: absolute; inset: 0; z-index: 2;
+        display: flex; align-items: center; justify-content: center;
+        padding: 20px 14px; overflow: auto;
+        background: linear-gradient(180deg, #f7fafc, #e9eef4);
+      }
+      .addr-pill.mini { width: min(520px, calc(100% - 20px)); top: 8px; }
+      .addr-pill.mini #addrInput2 {
+        flex: 1 1 auto; min-width: 0; min-height: 38px;
+        padding: 7px 14px; border: 0; border-radius: 999px;
+        background: rgba(240, 244, 248, 0.85); color: var(--ink);
+      }
+      .addr-pill.mini #addrInput2:focus { outline: 2px solid var(--accent); outline-offset: -1px; background: var(--surface); }
+
+      /* Split toggle: same daylight glass as the panic button.
+         Both now live in the shell's top toolbar (see the app-shell
+         style block below, which overrides their position). */
+      #splitBtn {        position: absolute; left: 14px; bottom: 14px; z-index: 6;
+        min-height: 46px; padding: 10px 18px;
+        border-radius: 999px; font-family: "Manrope", sans-serif; font-weight: 600;
+        background: rgba(255, 255, 255, 0.82);
+        -webkit-backdrop-filter: blur(16px) saturate(1.5);
+        backdrop-filter: blur(16px) saturate(1.5);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 12px 30px -10px rgba(28, 35, 48, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        cursor: pointer;
+        display: inline-flex; align-items: center; gap: 8px;
+        transition: transform 0.28s var(--ease-spring), box-shadow 0.25s var(--ease-out);
+      }
+      #splitBtn:hover { transform: translateY(-2px); }
+      #splitBtn:active { transform: scale(0.97); }
+      #splitBtn[aria-pressed="true"] { background: linear-gradient(180deg, #3f74c6, #2f62b8); color: #fff; border-color: rgba(24, 58, 112, 0.35); }
+      @media (prefers-reduced-motion: reduce) {
+        #splitBtn { transition: none; }
+        #splitBtn:hover { transform: none; }
+      }
+      /* Phone width: while the hub covers the container, park the
+         browser layer's two corner buttons above the mobile nav's
+         band so nothing paints over them; the moment the container
+         is uncovered (and the nav has slid away with the hub) they
+         settle into the bottom corners where thumbs expect them. */
+      @media (max-width: 860px) {
+        #panicBtn, #splitBtn {
+          bottom: 100px;
+          transition: bottom 0.5s cubic-bezier(0.32, 0.72, 0.24, 1), transform 0.28s var(--ease-spring), box-shadow 0.25s var(--ease-out);
+        }
+        body.browsing #panicBtn, body.browsing #splitBtn {
+          bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+        }
+      }
+      @media (max-width: 860px) and (prefers-reduced-motion: reduce) {
+        #panicBtn, #splitBtn { transition: none; }
+      }
+    </style>
+    <style>
+      /* ============ APP SHELL — full-viewport container frame ======
+         Modelled on the reference shell: the document itself is only
+         a vessel (a full-viewport flex column: title bar on top,
+         mounting area below). Browsing content is never part of this
+         document — it is mounted at runtime inside the panes below
+         the bar, and the bar is the shell's own chrome that makes
+         the containment readable. Daylight only, blue accent. */
+      #browserView {
+        display: flex; flex-direction: column;
+        background: linear-gradient(180deg, #f7fafc, #e9eef4);
+      }
+      /* --- the title bar --- */
+      #shellBar {
+        flex: 0 0 auto; z-index: 20;
+        display: flex; align-items: center; gap: 14px;
+        min-height: 58px; padding: 8px 14px;
+        padding-top: calc(8px + env(safe-area-inset-top, 0px));
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(244, 247, 251, 0.88));
+        -webkit-backdrop-filter: blur(18px) saturate(1.55);
+        backdrop-filter: blur(18px) saturate(1.55);
+        border-bottom: 1px solid rgba(28, 35, 48, 0.09);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 1px 10px rgba(28, 35, 48, 0.05);
+      }
+      .shell-id { display: inline-flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+      .shell-dots { display: inline-flex; gap: 6px; }
+      .shell-dots i {
+        width: 11px; height: 11px; border-radius: 50%; display: block;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), inset 0 -3px 5px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(28, 35, 48, 0.16);
+      }
+      .shell-dots i:nth-child(1) { background: #b9c9dd; }
+      .shell-dots i:nth-child(2) { background: #7fb0ec; }
+      .shell-dots i:nth-child(3) { background: var(--accent); }
+      .shell-name {
+        font-family: "Sora", "Manrope", sans-serif;
+        font-size: 13px; font-weight: 700; letter-spacing: 0.02em; color: var(--muted);
+        white-space: nowrap;
+      }
+      /* The title-bar label keeps the label's exact look — no button
+         chrome, no pointer cursor, no tap flash. */
+      button.shell-name {
+        background: none; border: 0; padding: 0; margin: 0;
+        cursor: default; -webkit-tap-highlight-color: transparent;
+        appearance: none; -webkit-appearance: none;
+      }
+      button.shell-name:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 6px; }
+      /* The brand in this bar, smaller than anywhere else on the
+         site (the hub and Guide wordmarks are 22px / 17px; this one
+         is 16px / 12px). It is a genuine home LINK — a plain
+         <a href="./"> that no script intercepts — so tapping it
+         really navigates this page back to the hub home. Leaving
+         on purpose is allowed to unload the container; that is
+         what separates it from the panic, which only ever covers
+         (see the "Container" label and the Work Hub button). */
+      .shell-brand {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-family: "Sora", "Manrope", sans-serif;
+        font-size: 12px; font-weight: 700; letter-spacing: -0.01em;
+        color: var(--ink); text-decoration: none; white-space: nowrap;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .shell-brand svg { display: block; color: var(--accent); }
+      .shell-brand:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 6px; }
+      /* The address pill lives in the title bar now — always visible,
+         never a floating overlay on the mounted content. */
+      #shellBar .addr-pill {
+        position: static; transform: none; opacity: 1;
+        flex: 1 1 auto; width: auto; max-width: 680px; margin: 0 auto;
+      }
+      #shellBar .addr-pill form { padding: 4px; box-shadow: 0 4px 16px -6px rgba(28, 35, 48, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.9); }
+      #shellBar #addrInput { min-height: 34px; }
+      #shellBar .addr-pill .btn { min-height: 34px; padding: 6px 16px; }
+      .shell-actions { display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto; margin-left: auto; }
+      /* Split + Work Hub as title-bar controls, not floating corners. */
+      #shellBar #splitBtn, #shellBar #panicBtn {
+        position: static; inset: auto; z-index: auto;
+        min-height: 38px; padding: 7px 15px; font-size: 13.5px;
+        box-shadow: 0 4px 14px -6px rgba(28, 35, 48, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      }
+      #shellBar #panicBtn {
+        background: linear-gradient(180deg, #3f74c6, #2f62b8);
+        border-color: rgba(24, 58, 112, 0.35); color: #fff;
+        box-shadow: 0 6px 16px -6px rgba(47, 98, 184, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+      }
+      /* --- the mounting area --- */
+      #panes {
+        position: relative; inset: auto; flex: 1 1 auto; min-height: 0; width: 100%;
+        background: #fff;
+        border-radius: 12px 12px 0 0; overflow: hidden;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      }
+      .pane { background: #fff; }
+      /* Mounted content fades in over the loading state, like the
+         reference frame: it starts transparent and settles to full
+         opacity once the framed site has arrived and is shown. */
+      .pane iframe { background: #fff; border-radius: 12px 12px 0 0; }
+      .pane iframe:not([hidden]) { animation: pane-fade 0.45s ease-out both; }
+      @keyframes pane-fade { from { opacity: 0; } to { opacity: 1; } }
+      @media (prefers-reduced-motion: reduce) {
+        .pane iframe:not([hidden]) { animation: none; }
+      }
+      /* In split mode the second pane keeps its own slim bar, set
+         into the pane so both panes visibly belong to one shell. */
+      .pane .addr-pill.mini { top: 10px; }
+      /* --- in-pane loading: one centred spinner, daylight style --- */
+      .loading-wrap {
+        display: flex; flex-direction: column; align-items: center; gap: 15px;
+        padding: 28px 30px; border-radius: 20px;
+        background: var(--glass-bg);
+        -webkit-backdrop-filter: blur(16px) saturate(1.45);
+        backdrop-filter: blur(16px) saturate(1.45);
+        border: 1px solid rgba(255, 255, 255, 0.75);
+        box-shadow: var(--glass-ring), var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      }
+      .spinner {
+        width: 38px; height: 38px; border-radius: 50%; flex: 0 0 auto;
+        border: 3.5px solid rgba(47, 98, 184, 0.16);
+        border-top-color: var(--accent);
+        animation: shell-spin 0.75s linear infinite;
+      }
+      @keyframes shell-spin { to { transform: rotate(360deg); } }
+      .loading-wrap .loading-text { font-weight: 600; color: var(--muted); }
+      @media (prefers-reduced-motion: reduce) {
+        .spinner { animation-duration: 2.4s; }
+        #shellBar #splitBtn, #shellBar #panicBtn { transition: none; }
+      }
+      /* --- phone: near full-bleed shell, bar wraps to two slim rows
+         so the address field and both controls stay fully tappable --- */
+      @media (max-width: 640px) {
+        #shellBar { flex-wrap: wrap; gap: 8px 10px; padding: 8px 10px 10px; padding-top: calc(8px + env(safe-area-inset-top, 0px)); }
+        .shell-dots { display: none; }
+        .shell-brand span { display: none; }
+        .shell-name { font-size: 12.5px; }
+        .shell-actions { gap: 6px; }
+        #shellBar #splitBtn, #shellBar #panicBtn { min-height: 36px; padding: 6px 12px; font-size: 13px; }
+        #shellBar .addr-pill { order: 3; flex: 1 1 100%; max-width: none; margin: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ======================= BROWSER LAYER ======================= -->
+    <div id="browserView">
+      <div id="shellBar">
+        <div class="shell-id">
+          <span class="shell-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <a class="shell-brand" href="./" aria-label="Work Hub — home" title="Work Hub — home">
+            <svg width="16" height="16" viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="4" width="48" height="56" rx="5" fill="none" stroke="currentColor" stroke-width="4"/><line x1="18" y1="21" x2="46" y2="21" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><line x1="18" y1="32" x2="46" y2="32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><line x1="18" y1="43" x2="36" y2="43" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+            <span>Work Hub</span>
+          </a>
+          <button class="shell-name" id="shellDoor" type="button">Container</button>
+        </div>
+        <div class="addr-pill">
+          <form id="addrForm">
+            <input id="addrInput" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false"
+                   placeholder="Type or paste a web address" aria-label="Web address" />
+            <button class="btn primary" id="loadBtn" type="submit">Open</button>
+          </form>
+        </div>
+        <div class="shell-actions">
+          <button id="splitBtn" type="button" aria-pressed="false" aria-label="Split" title="Browse two pages at once, side by side, with a divider you can drag">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+            Split
+          </button>
+          <button id="panicBtn" type="button" aria-label="Work Hub" title="Slide the work hub back over this page">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            Work Hub
+          </button>
+        </div>
+      </div>
+      <div id="panes">
+        <div class="pane" id="pane1">
+          <iframe id="frame" title="Page shown full screen" sandbox="allow-scripts allow-forms allow-same-origin allow-downloads allow-popups" hidden></iframe>
+
+          <div class="stage-msg" id="emptyState">
+            <div class="note-card">
+              <h1>Open a page</h1>
+              <p>Type or paste a web address in the bar at the top and it will appear here, inside this page — or just type words to search. The Split button in that top bar opens a second pane beside it, with a divider you can drag.</p>
+              <div class="doc-lines" aria-hidden="true"><i></i><i></i><i></i></div>
+              <div class="actions">
+                <button class="btn" id="exampleBtn" type="button">Try an example page</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="stage-msg" id="loadingState" hidden>
+            <div class="loading-wrap" role="status" aria-live="polite">
+              <div class="spinner" aria-hidden="true"></div>
+              <p class="loading-text">Loading…</p>
+            </div>
+          </div>
+
+          <div class="stage-msg" id="blockedState" hidden>
+            <div class="note-card">
+              <h1>That site won't display inside a page</h1>
+              <p>Some sites refuse to appear inside another page. Nothing is wrong — you can open this one in a new tab instead.</p>
+              <div class="actions">
+                <a class="btn" id="openTabLink" href="#" target="_blank" rel="noopener noreferrer">Open in a new tab</a>
+                <button class="btn" id="retryBtn" type="button">Try again here</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="stage-msg" id="errorState" hidden>
+            <div class="note-card">
+              <h1>That doesn't look like a web address</h1>
+              <p class="err" id="errorText">Check the address and try again — for example, example.com or https://news.site/article.</p>
+              <div class="actions">
+                <button class="btn" id="errorBackBtn" type="button">Back</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div id="divider" hidden role="separator" tabindex="0" aria-orientation="vertical" aria-label="Resize panes — drag, or use the arrow keys">
+          <span class="grip" aria-hidden="true"></span>
+        </div>
+
+        <div class="pane" id="pane2" hidden>
+          <iframe id="frame2" title="Second page" sandbox="allow-scripts allow-forms allow-same-origin allow-downloads allow-popups" hidden></iframe>
+
+          <div class="pane-msg" id="pane2Empty">
+            <div class="note-card">
+              <h1>Second pane</h1>
+              <p>Type or paste an address in this pane's own bar at the top.</p>
+              <div class="actions">
+                <button class="btn" id="exampleBtn2" type="button">Try an example page</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="pane-msg" id="pane2Loading" hidden>
+            <div class="loading-wrap" role="status" aria-live="polite">
+              <div class="spinner" aria-hidden="true"></div>
+              <p class="loading-text">Loading…</p>
+            </div>
+          </div>
+
+          <div class="pane-msg" id="pane2Blocked" hidden>
+            <div class="note-card">
+              <h1>That site won't display inside a page</h1>
+              <p>Some sites refuse to appear inside another page. You can open this one in a new tab instead.</p>
+              <div class="actions">
+                <a class="btn" id="pane2TabLink" href="#" target="_blank" rel="noopener noreferrer">Open in a new tab</a>
+                <button class="btn" id="retryBtn2" type="button">Try again here</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="addr-pill mini">
+            <form id="addrForm2">
+              <input id="addrInput2" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false"
+                     placeholder="Address for this pane" aria-label="Web address for the second pane" />
+              <button class="btn primary" type="submit">Open</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================= WORK HUB ======================= -->
+    <div id="hubView">
+      <div class="hub-inner">
+        <header class="hub-head">
+          <a class="brand" id="brandHome" href="./">
+            <svg width="22" height="22" viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="4" width="48" height="56" rx="5" fill="none" stroke="currentColor" stroke-width="4"/><line x1="18" y1="21" x2="46" y2="21" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><line x1="18" y1="32" x2="46" y2="32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><line x1="18" y1="43" x2="36" y2="43" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+            Work Hub
+          </a>
+          <label class="auto-toggle" title="Slide the work hub back over the browser by itself when this window loses focus">
+            <input type="checkbox" id="autoPanic" />
+            Auto-cover when this window loses focus
+          </label>
+        </header>
+
+        <p class="hub-date" id="hubDate"></p>
+        <h1 class="hub-title" id="hubGreeting">Your workday, in one place.</h1>
+
+        <form class="search-row" id="searchForm">
+          <input id="searchInput" type="search" placeholder="Search the web" aria-label="Search the web" autocomplete="off" />
+          <button class="btn primary" type="submit">Search</button>
+        </form>
+
+        <section class="hub-section" id="sec-links" aria-labelledby="linksHead">
+          <h2 id="linksHead">Quick links — little-known finds</h2>
+          <p class="links-intro">Researched and re-checked on 12 November 2026 — no famous defaults. Every pick is free or has a genuinely usable free tier, works in the browser, and needs no sign-up for its core job. ★ marks the top 12. Each tile prints its catch.</p>
+          <div class="link-grid">
+            <a class="spot-card" href="https://dribbble.com" target="_blank" rel="noopener noreferrer">
+              <span class="spot-ic" aria-hidden="true">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M4.5 9.2c4.2 2 10 2 15-.6M5 15.8c3.8-2.3 9.4-2.2 13.9.6M12.6 3.2c-3.4 3.8-3.6 13.8-.4 17.6M11.2 3.1c3.8 4.1 3.9 13.9.3 17.8"/></svg>
+              </span>
+              <span class="spot-body">
+                <span class="spot-kicker">Design inspiration</span>
+                <span class="spot-name" style="display:block;">Dribbble</span>
+                <p class="spot-text">Browse shots, trends and portfolios from designers around the world — a good place to unstick a blank page.</p>
+                <span class="spot-url">dribbble.com ↗</span>
+              </span>
+            </a>
+
+            <a class="tile" href="https://pairdrop.net/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#256d46;">Pd</span>
+              <span class="tile-name">PairDrop ★</span>
+              <span class="tile-sub">Send files &amp; text between your devices, AirDrop-style, right in the browser.</span>
+              <span class="tile-note">Free · open source · no sign-up · pairdrop.net</span>
+            </a>
+            <a class="tile" href="https://excalidraw.com/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#4a5568;">Ex</span>
+              <span class="tile-name">Excalidraw ★</span>
+              <span class="tile-sub">Sketch diagrams &amp; whiteboard ideas — opens straight onto a usable canvas.</span>
+              <span class="tile-note">Free, no account · drawings stay in this browser unless you export · excalidraw.com</span>
+            </a>
+            <a class="tile" href="https://mynoise.net/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#2f6f6a;">mN</span>
+              <span class="tile-name">myNoise ★</span>
+              <span class="tile-sub">300+ ambient soundscapes you tune to your hearing with a 10-slider EQ.</span>
+              <span class="tile-note">Free to listen · no sign-up · some extras unlock with a one-time donation · mynoise.net</span>
+            </a>
+            <a class="tile" href="https://pomofocus.io/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#b4452f;">Pf</span>
+              <span class="tile-name">Pomofocus ★</span>
+              <span class="tile-sub">Pomodoro timer that is also your task list, with estimates and a predicted finish time.</span>
+              <span class="tile-note">Free core · sign-in only to sync history · Premium reported ~$3/mo · pomofocus.io</span>
+            </a>
+            <a class="tile" href="https://www.photopea.com/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#7a4a21;">Pp</span>
+              <span class="tile-name">Photopea ★</span>
+              <span class="tile-sub">Photoshop-style editor in a tab — opens real PSDs with layers, runs fully locally.</span>
+              <span class="tile-note">Free with ads · no account · no editing feature paywalled · photopea.com</span>
+            </a>
+            <a class="tile" href="https://it-tools.tech/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#33536e;">IT</span>
+              <span class="tile-name">IT-Tools ★</span>
+              <span class="tile-sub">~85 tiny tools in one page: converters, QR codes, password generators, text diff…</span>
+              <span class="tile-note">Completely free · open source · no sign-up, no ads · it-tools.tech</span>
+            </a>
+            <a class="tile" href="https://squoosh.app/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#8a5a12;">Sq</span>
+              <span class="tile-name">Squoosh ★</span>
+              <span class="tile-sub">Shrink one image with a live before/after slider, so you see the quality you are trading.</span>
+              <span class="tile-note">Free · unlimited · image never leaves your device · strictly one at a time · squoosh.app</span>
+            </a>
+            <a class="tile" href="https://wormhole.app/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#444c56;">Wh</span>
+              <span class="tile-name">Wormhole ★</span>
+              <span class="tile-sub">Send a file up to 10 GB via an end-to-end-encrypted link that self-destructs.</span>
+              <span class="tile-note">Free · no account · links die within 24 hrs · files over 5 GB need your tab left open · wormhole.app</span>
+            </a>
+            <a class="tile" href="https://kinopio.club/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#a03d63;">Ki</span>
+              <span class="tile-name">Kinopio ★</span>
+              <span class="tile-sub">Sticky-note canvas for mind maps, moodboards, research and plans.</span>
+              <span class="tile-note">Free for 100 cards · no sign-up · unlimited reported ~$6–8/mo · kinopio.club</span>
+            </a>
+            <a class="tile" href="https://goblin.tools/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#4d6b2f;">Go</span>
+              <span class="tile-name">Goblin Tools ★</span>
+              <span class="tile-sub">Break a daunting task into steps, re-tone text, or unpick a message's emotional subtext.</span>
+              <span class="tile-note">All nine tools free · no account · free results are not saved · goblin.tools</span>
+            </a>
+            <a class="tile" href="https://hemingwayapp.com/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#8a6d1d;">He</span>
+              <span class="tile-name">Hemingway Editor ★</span>
+              <span class="tile-sub">Highlights hard sentences, passive voice and adverbs so writing reads clearly, not just correctly.</span>
+              <span class="tile-note">Web editor free · no account · checks clarity only, and can't save · hemingwayapp.com</span>
+            </a>
+            <a class="tile" href="https://www.omnicalculator.com/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#2e5f8a;">Oc</span>
+              <span class="tile-name">Omni Calculator ★</span>
+              <span class="tile-sub">3,938 specialist calculators — salary↔hourly, loans, percentages, dates, units…</span>
+              <span class="tile-note">Free · no sign-up · results are estimates, not professional advice · omnicalculator.com</span>
+            </a>
+            <a class="tile" href="https://www.sejda.com/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#6b4a2f;">Se</span>
+              <span class="tile-name">Sejda</span>
+              <span class="tile-sub">40+ PDF jobs — one of the few free editors that edits a PDF's actual text, with no watermark.</span>
+              <span class="tile-note">Free, no sign-up · capped at 3 tasks/hr · web files sit on its servers, deleted within ~2 hrs · sejda.com</span>
+            </a>
+            <a class="tile" href="https://shrib.com/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#546e7a;">Sh</span>
+              <span class="tile-name">Shrib</span>
+              <span class="tile-sub">Instant notepad: type at shrib.com/anything and it is already a shareable, editable page.</span>
+              <span class="tile-note">Free · no login · notes live in its cloud — don't store secrets · shrib.com</span>
+            </a>
+            <a class="tile" href="https://coolors.co/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#b3541e;">Co</span>
+              <span class="tile-name">Coolors</span>
+              <span class="tile-sub">Colour palettes in seconds — hit spacebar, lock the colours you like, export.</span>
+              <span class="tile-note">Generate free, no account · free accounts save up to 10 palettes · coolors.co</span>
+            </a>
+            <a class="tile" href="https://everytimezone.com/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#38618c;">ET</span>
+              <span class="tile-name">Every Time Zone</span>
+              <span class="tile-sub">All major time zones on one draggable timeline — ends “9am Pacific is what in Berlin?”</span>
+              <span class="tile-note">Core timeline free · no sign-up · meeting extras are paid · everytimezone.com</span>
+            </a>
+            <a class="tile" href="https://asoftmurmur.com/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#5d7a4e;">Mu</span>
+              <span class="tile-name">A Soft Murmur</span>
+              <span class="tile-sub">Mix rain, thunder and café sounds — your exact mix is encoded in a shareable link.</span>
+              <span class="tile-note">Free with 10 sounds · 15 extra sounds are Pro, reported $14.99/yr · asoftmurmur.com</span>
+            </a>
+            <a class="tile" href="https://radio.garden/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#7a3b4f;">RG</span>
+              <span class="tile-name">Radio Garden</span>
+              <span class="tile-sub">Spin a 3D globe and listen to 40,000+ live local radio stations.</span>
+              <span class="tile-note">Free · no account · UK listeners are restricted to UK stations · radio.garden</span>
+            </a>
+            <a class="tile" href="https://monkeytype.com/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#6e6259;">Mt</span>
+              <span class="tile-name">Monkeytype</span>
+              <span class="tile-sub">Minimal typing-speed check — WPM, accuracy and consistency in 30 seconds.</span>
+              <span class="tile-note">Free · account optional, only for history/leaderboards · monkeytype.com</span>
+            </a>
+            <a class="tile" href="https://www.diffchecker.com/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#3f5a4c;">Di</span>
+              <span class="tile-name">Diffchecker</span>
+              <span class="tile-sub">Paste two drafts and see every insertion and deletion highlighted side by side.</span>
+              <span class="tile-note">Comparing is free, no sign-up · saving/sharing a diff needs a free account · diffchecker.com</span>
+            </a>
+            <a class="tile" href="https://wordcounter.net/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#71563a;">Wc</span>
+              <span class="tile-name">WordCounter</span>
+              <span class="tile-sub">Live counts plus keyword density, reading level, and reading &amp; speaking time.</span>
+              <span class="tile-note">Free · no sign-up · ad-supported — avoid pasting confidential text · wordcounter.net</span>
+            </a>
+            <a class="tile" href="https://www.printfriendly.com/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#4e6e8e;">Pr</span>
+              <span class="tile-name">PrintFriendly</span>
+              <span class="tile-sub">Paste an article URL and get a clean, ad-free page you can trim, print or save as PDF.</span>
+              <span class="tile-note">Free · saving a PDF needs no account · paywalled pages need its extension · printfriendly.com</span>
+            </a>
+            <a class="tile" href="https://languagetool.org/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#8c4a3a;">Lt</span>
+              <span class="tile-name">LanguageTool</span>
+              <span class="tile-sub">Grammar, spelling and style checker in 30+ languages — the non-Grammarly one.</span>
+              <span class="tile-note">Free web checker, no account · capped at 10,000 characters per text · languagetool.org</span>
+            </a>
+            <a class="tile" href="https://alternativeto.net/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#5a4a6e;">At</span>
+              <span class="tile-name">AlternativeTo</span>
+              <span class="tile-sub">“What can replace X?” — crowdsourced alternatives ranked by real user opinions.</span>
+              <span class="tile-note">Free · browsing needs no account · 162,283 apps / 2,820,507 opinions on its homepage, 12 Nov 2026 · alternativeto.net</span>
+            </a>
+            <a class="tile" href="https://marinaratimer.com/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#a35a2a;">Ma</span>
+              <span class="tile-name">Marinara Timer</span>
+              <span class="tile-sub">Pomodoro and custom timers with a shareable URL, so a whole team watches one countdown.</span>
+              <span class="tile-note">Completely free · no sign-up · no premium tier · no tasks or history · marinaratimer.com</span>
+            </a>
+            <a class="tile" href="https://justdeleteme.xyz/" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#6e3b3b;">JD</span>
+              <span class="tile-name">JustDeleteMe</span>
+              <span class="tile-sub">Direct account-deletion links for thousands of services, each rated easy to impossible.</span>
+              <span class="tile-note">Free · no sign-up · a directory, not a service — entries can go stale · justdeleteme.xyz</span>
+            </a>
+            <a class="tile" href="https://www.virustotal.com/gui/home/upload" target="_blank" rel="noopener noreferrer">
+              <span class="tile-ic" style="background:#394eff;">VT</span>
+              <span class="tile-name">VirusTotal</span>
+              <span class="tile-sub">Check a suspicious file, URL or hash against dozens of antivirus scanners before you open it.</span>
+              <span class="tile-note">Free · no account needed to scan · uploaded files are shared with security vendors — for something private, search its SHA-256 hash instead (the file check below makes one without uploading) · virustotal.com</span>
+            </a>
+          </div>
+          <p class="links-foot">Deliberately not linked: Snapdrop (sold to LimeWire — transfers now go through its servers; its own maintainers point people to PairDrop), Smallpdf (free tier is ~2 tasks/day) and TinyWow (ad/CAPTCHA funnel). Open question: no reputable, long-lived, no-sign-up browser habit tracker met the bar, so there is no habit link — Pomofocus reports and Goblin Tools cover that ground indirectly. Prices marked “reported” come from October–November 2026 reviews, not checkout pages.</p>
+        </section>
+
+        <section class="hub-section" id="sec-tools" aria-labelledby="toolsHead">
+          <h2 id="toolsHead">Tools</h2>
+
+          <!-- ======== File converter (100% local) ======== -->
+          <div class="card" id="card-convert" aria-labelledby="convHead">
+            <h3 id="convHead">File converter</h3>
+            <p class="sub">Convert images (PNG, JPG, WebP, AVIF), pull the audio out of a video or audio file as WAV or Opus/WebM, turn text and data between JSON, CSV, Base64, hex and more, and fingerprint any file with its SHA-256 hash. Most converter sites upload your file to their server — where it can be kept, read, or sold on. This one has no server to upload to: every conversion below runs in this tab, on this device.</p>
+            <p class="privacy-note">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+              <span>Files never leave this device — conversion happens in your browser. Nothing is uploaded, saved or tracked.</span>
+            </p>
+
+            <div class="conv-block">
+              <h4>Image converter</h4>
+              <div class="drop-zone" id="imgDrop" role="button" tabindex="0" aria-label="Choose or drop an image to convert">
+                <strong>Drop an image here</strong> or click to choose one<br />
+                <span style="font-size:13px;">PNG, JPG, WebP, GIF or BMP</span>
+              </div>
+              <input type="file" id="imgFile" accept="image/*" hidden />
+              <div id="imgControls" hidden>
+                <div class="conv-controls">
+                  <label class="field">Convert to
+                    <select id="imgFormat">
+                      <option value="image/png">PNG</option>
+                      <option value="image/jpeg" selected>JPG</option>
+                      <option value="image/webp">WebP</option>
+                      <option value="image/avif">AVIF (where the browser supports it)</option>
+                    </select>
+                  </label>
+                  <label class="field">Quality <span id="qualityVal">85%</span>
+                    <input type="range" id="imgQuality" min="10" max="100" value="85" />
+                  </label>
+                  <label class="field">Max size
+                    <select id="imgMaxDim">
+                      <option value="0" selected>Original size</option>
+                      <option value="1920">1920 px</option>
+                      <option value="1280">1280 px</option>
+                      <option value="1024">1024 px</option>
+                      <option value="800">800 px</option>
+                      <option value="512">512 px</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="conv-result" id="imgResult" hidden>
+                  <img id="imgPreview" alt="Converted image preview" />
+                  <div class="conv-stats" id="imgStats"></div>
+                  <a class="btn primary" id="imgDownload" href="#" download>Download converted image</a>
+                </div>
+                <p class="status-line" id="imgStatus"></p>
+              </div>
+            </div>
+
+            <div class="conv-block">
+              <h4>Audio extractor &amp; converter</h4>
+              <p class="sub" style="margin-bottom:12px;">The YouTube-to-Opus idea, without the middleman: sites like that have to fetch and process the file on their server, which is exactly where a copy can be kept. Pasting a YouTube link can't be done from a page like this one — it would need a server doing the fetching, and that server would see everything. But if the video or audio file is already on this device, its audio can be pulled out right here: MP4, WebM, MP3, M4A, OGG and similar in, WAV or Opus/WebM out. Opus conversion plays the audio through in real time, so a long file takes as long as it lasts.</p>
+              <div class="drop-zone" id="audioDrop" role="button" tabindex="0" aria-label="Choose or drop an audio or video file">
+                <strong>Drop an audio or video file here</strong> or click to choose one<br />
+                <span style="font-size:13px;">MP4, WebM, MP3, M4A, OGG, WAV, FLAC…</span>
+              </div>
+              <input type="file" id="audioFile" accept="audio/*,video/*" hidden />
+              <div id="audioControls" hidden>
+                <div class="conv-controls">
+                  <label class="field">Convert audio to
+                    <select id="audioFormat">
+                      <option value="wav" selected>WAV (lossless)</option>
+                      <option value="opus">Opus / WebM</option>
+                    </select>
+                  </label>
+                  <button class="btn primary" type="button" id="audioConvertBtn">Convert audio</button>
+                </div>
+                <div class="conv-result" id="audioResult" hidden>
+                  <div class="conv-stats" id="audioStats"></div>
+                  <a class="btn primary" id="audioDownload" href="#" download>Download audio</a>
+                </div>
+                <p class="status-line" id="audioStatus"></p>
+              </div>
+            </div>
+
+            <div class="conv-block">
+              <h4>File check — fingerprint a file before you trust it</h4>
+              <p class="sub" style="margin-bottom:12px;">Works out any file's SHA-256 fingerprint on this device. A fingerprint identifies a file without revealing its contents, so you can look that fingerprint up on VirusTotal to see whether scanners have met the file before — without handing the file itself to anyone.</p>
+              <div class="drop-zone" id="hashDrop" role="button" tabindex="0" aria-label="Choose or drop a file to fingerprint">
+                <strong>Drop any file here</strong> or click to choose one<br />
+                <span style="font-size:13px;">The file is read on this device only — nothing is uploaded</span>
+              </div>
+              <input type="file" id="hashFile" hidden />
+              <div id="hashResult" hidden>
+                <div class="conv-stats" id="hashStats" style="margin-top:12px;"></div>
+                <p id="hashValue" style="font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace; font-size:12.5px; word-break:break-all; margin:8px 0;"></p>
+                <div class="tool-btns">
+                  <a class="btn primary" id="vtLink" href="#" target="_blank" rel="noopener noreferrer">Look this fingerprint up on VirusTotal ↗</a>
+                  <button class="btn" type="button" id="hashCopyBtn">Copy fingerprint</button>
+                </div>
+              </div>
+              <p class="status-line" id="hashStatus"></p>
+            </div>
+
+            <div class="conv-block">
+              <h4>Text &amp; data converter</h4>
+              <div class="text-tools">
+                <div>
+                  <textarea id="txtIn" placeholder="Paste text, JSON or CSV here…" aria-label="Text to convert" spellcheck="false"></textarea>
+                  <div class="count-line" id="txtInCount">0 characters · 0 words</div>
+                </div>
+                <div>
+                  <textarea id="txtOut" placeholder="Result appears here" aria-label="Converted text" spellcheck="false" readonly></textarea>
+                  <div class="count-line" id="txtOutCount">0 characters</div>
+                </div>
+              </div>
+              <div class="tool-btns">
+                <button class="btn small" type="button" data-op="b64enc">Base64 encode</button>
+                <button class="btn small" type="button" data-op="b64dec">Base64 decode</button>
+                <button class="btn small" type="button" data-op="urlenc">URL encode</button>
+                <button class="btn small" type="button" data-op="urldec">URL decode</button>
+                <button class="btn small" type="button" data-op="jsonfmt">JSON format</button>
+                <button class="btn small" type="button" data-op="jsonmin">JSON minify</button>
+                <button class="btn small" type="button" data-op="csvjson">CSV → JSON</button>
+                <button class="btn small" type="button" data-op="jsoncsv">JSON → CSV</button>
+                <button class="btn small" type="button" data-op="htmlenc">HTML entities encode</button>
+                <button class="btn small" type="button" data-op="htmldec">HTML entities decode</button>
+                <button class="btn small" type="button" data-op="hexenc">Hex encode</button>
+                <button class="btn small" type="button" data-op="hexdec">Hex decode</button>
+                <button class="btn small" type="button" data-op="upper">UPPERCASE</button>
+                <button class="btn small" type="button" data-op="lower">lowercase</button>
+                <button class="btn small" type="button" data-op="title">Title Case</button>
+                <button class="btn small" type="button" data-op="dedupe">Remove duplicate lines</button>
+                <button class="btn small" type="button" data-op="sortlines">Sort lines A–Z</button>
+              </div>
+              <div class="tool-btns">
+                <button class="btn small" type="button" id="txtLoadBtn">Load a text file…</button>
+                <input type="file" id="txtFile" accept=".txt,.json,.csv,.md,text/plain,application/json,text/csv" hidden />
+                <button class="btn small" type="button" id="txtCopyBtn">Copy result</button>
+                <button class="btn small" type="button" id="txtDownloadBtn">Download result</button>
+                <button class="btn small" type="button" id="txtSwapBtn">Use result as input</button>
+              </div>
+              <p class="status-line" id="txtStatus"></p>
+            </div>
+          </div>
+
+          <!-- ======== AI assistant (links out — no official embed found) ======== -->
+          <div class="card" id="card-ai" aria-labelledby="aiHead" style="margin-top:10px;">
+            <h3 id="aiHead">AI assistant</h3>
+            <p class="sub">Tusk Central AI puts dozens of AI models — ChatGPT, Claude, Gemini, Grok and more — in one free, ad-supported chat. Its homepage today says 38 models are free and unlimited; premium, deep-thinking models run on free monthly credits, then pay-as-you-go (support.tuskcentral.ai).</p>
+            <p class="sub" style="margin-bottom:12px;"><strong>Can it be embedded on this page?</strong> There's no official embed — no embed code, widget or embedding terms were found on tuskcentral.ai or its support pages when checked on 12 November 2026. Tapping Open opens it in a new tab, like the other links on this page.</p>
+            <a class="btn primary" href="https://tuskcentral.ai" target="_blank" rel="noopener noreferrer">Open Tusk Central AI</a>
+          </div>
+
+          <div class="tool-grid">
+            <!-- ======== Focus timer ======== -->
+            <div class="card" id="card-timer" aria-labelledby="timerHead">
+              <h3 id="timerHead">Focus timer</h3>
+              <p class="sub">A simple Pomodoro-style countdown.</p>
+              <div class="timer-display" id="timerDisplay">25:00</div>
+              <div class="timer-status" id="timerStatus">Ready when you are.</div>
+              <div class="timer-modes">
+                <button class="btn small" type="button" data-mins="25" aria-pressed="true">Focus · 25</button>
+                <button class="btn small" type="button" data-mins="50" aria-pressed="false">Deep work · 50</button>
+                <button class="btn small" type="button" data-mins="5" aria-pressed="false">Break · 5</button>
+              </div>
+              <div class="timer-actions">
+                <button class="btn primary" type="button" id="timerStartBtn">Start</button>
+                <button class="btn" type="button" id="timerResetBtn">Reset</button>
+              </div>
+            </div>
+
+            <!-- ======== Scratchpad ======== -->
+            <div class="card" id="card-pad" aria-labelledby="padHead">
+              <h3 id="padHead">Scratchpad</h3>
+              <p class="sub">Jot something down while you work.</p>
+              <textarea class="pad-area" id="padArea" placeholder="Notes, drafts, a number you keep forgetting…" aria-label="Scratchpad"></textarea>
+              <div class="count-line" id="padCount">0 characters · 0 words</div>
+            </div>
+
+            <!-- ======== World clock ======== -->
+            <div class="card" id="card-clock" aria-labelledby="clockHead">
+              <h3 id="clockHead">World clock</h3>
+              <p class="sub">Handy before you schedule that call.</p>
+              <div class="clock-list" id="clockList"></div>
+            </div>
+          </div>
+        </section>
+
+        <footer class="hub-foot">
+          <span>Work Hub — everyday tools and links, all in one place</span>
+          <span><a href="#guide" id="guideLink">Guide</a></span>
+          <span>Everything on this page runs right in your browser.</span>
+        </footer>
+      </div>
+
+    </div>
+
+    <!-- ======================= GUIDE PAGE =======================
+         A routine page of the site, linked plainly from the hub
+         footer. Its wordmark is a genuine home link, like the hub's.
+         One ordinary word in the converter paragraph below is the
+         doorway into the browser container — it is styled exactly
+         like every other word around it, at rest and on hover. -->
+    <div id="guideView">
+      <div class="guide-inner">
+        <header class="hub-head">
+          <a class="brand" id="guideHome" href="./">
+            <svg width="22" height="22" viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="4" width="48" height="56" rx="5" fill="none" stroke="currentColor" stroke-width="4"/><line x1="18" y1="21" x2="46" y2="21" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><line x1="18" y1="32" x2="46" y2="32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><line x1="18" y1="43" x2="36" y2="43" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+            Work Hub
+          </a>
+        </header>
+
+        <h1>Guide</h1>
+        <p class="guide-lede">One long page: the bottom bar jumps between sections, the search box at the top takes this page straight to the results, and every link opens in a new tab, so the hub stays where you left it. Nothing here needs an account.</p>
+
+        <section aria-labelledby="guideConvHead">
+          <h2 id="guideConvHead">The file converter</h2>
+          <p>It swaps images between PNG, JPG, WebP and AVIF, pulls the audio out of a video, converts text and data, and fingerprints files with their SHA-256 hash. A file format is really just a <button class="door-word" id="guideDoor" type="button">container</button> — the same picture can travel as a PNG, a JPG or a WebP, and converting it repacks the picture without it ever leaving your device.</p>
+        </section>
+
+        <section aria-labelledby="guideRestHead">
+          <h2 id="guideRestHead">Timer, scratchpad &amp; clock</h2>
+          <p>A Pomodoro countdown — 25 minutes to focus, 50 for deep work, 5 for a break — a scratchpad for the note you need for ten minutes, and a clock showing local time alongside New York, London and Tokyo.</p>
+        </section>
+
+        <section aria-labelledby="guideLinksHead">
+          <h2 id="guideLinksHead">The quick links</h2>
+          <p>Researched finds that are free or genuinely free-tier, work in the browser and need no sign-up for their core job — each tile prints its catch, so there are no surprises after the click.</p>
+        </section>
+
+        <footer class="guide-foot">
+          <span>Work Hub — everyday tools and links, all in one place.</span>
+        </footer>
+      </div>
+    </div>
+
+    <!-- Desktop: floating macOS-style dock. A sibling of #hubView (not
+         a child) so position:fixed anchors it to the viewport and it
+         stays pinned to the bottom while the hub scrolls. -->
+    <nav id="dock" aria-label="Hub sections">
+        <button class="app is-active" type="button" data-nav-target="sec-links" style="background:#53B5F9" aria-label="Quick links">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          <span class="tip" aria-hidden="true">Quick links</span><span class="dot" aria-hidden="true"></span>
+        </button>
+        <button class="app" type="button" data-nav-target="card-convert" style="background:#FF8A3D" aria-label="File converter">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>
+          <span class="tip" aria-hidden="true">File converter</span><span class="dot" aria-hidden="true"></span>
+        </button>
+        <button class="app" type="button" data-nav-target="card-ai" style="background:#E432B7" aria-label="AI assistant">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/><path d="M19 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2z"/></svg>
+          <span class="tip" aria-hidden="true">AI assistant</span><span class="dot" aria-hidden="true"></span>
+        </button>
+        <button class="app" type="button" data-nav-target="card-timer" style="background:#75F94C" aria-label="Focus timer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2h4"/><path d="M12 8v5l3 2"/><circle cx="12" cy="14" r="7.5"/></svg>
+          <span class="tip" aria-hidden="true">Focus timer</span><span class="dot" aria-hidden="true"></span>
+        </button>
+        <button class="app" type="button" data-nav-target="card-pad" style="background:#FFDD46" aria-label="Scratchpad">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <span class="tip" aria-hidden="true">Scratchpad</span><span class="dot" aria-hidden="true"></span>
+        </button>
+        <button class="app" type="button" data-nav-target="card-clock" style="background:#2ED3B7" aria-label="World clock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19"/><path d="M12 2.5c2.8 2.6 4.2 5.9 4.2 9.5s-1.4 6.9-4.2 9.5c-2.8-2.6-4.2-5.9-4.2-9.5S9.2 5.1 12 2.5z"/></svg>
+          <span class="tip" aria-hidden="true">World clock</span><span class="dot" aria-hidden="true"></span>
+        </button>
+      </nav>
+
+      <!-- Mobile: liquid-glass slider -->
+      <nav id="glassNav" aria-label="Hub sections">
+        <div class="glass-lens" id="glassLens" aria-hidden="true"></div>
+        <div class="glass-items">
+          <button class="gnav-item is-active" type="button" data-nav-target="sec-links" aria-label="Quick links">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            <span>Links</span>
+          </button>
+          <button class="gnav-item" type="button" data-nav-target="card-convert" aria-label="File converter">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>
+            <span>Convert</span>
+          </button>
+          <button class="gnav-item" type="button" data-nav-target="card-ai" aria-label="AI assistant">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/><path d="M19 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2z"/></svg>
+            <span>AI</span>
+          </button>
+          <button class="gnav-item" type="button" data-nav-target="card-timer" aria-label="Focus timer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2h4"/><path d="M12 8v5l3 2"/><circle cx="12" cy="14" r="7.5"/></svg>
+            <span>Timer</span>
+          </button>
+          <button class="gnav-item" type="button" data-nav-target="card-pad" aria-label="Scratchpad">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            <span>Notes</span>
+          </button>
+          <button class="gnav-item" type="button" data-nav-target="card-clock" aria-label="World clock">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19"/><path d="M12 2.5c2.8 2.6 4.2 5.9 4.2 9.5s-1.4 6.9-4.2 9.5c-2.8-2.6-4.2-5.9-4.2-9.5S9.2 5.1 12 2.5z"/></svg>
+            <span>Clock</span>
+          </button>
+        </div>
+    </nav>
+
+    <script>
+      (function () {
+        'use strict';
+
+        /* ================= cover / reveal =================
+           The hub is a panel that slides over the full-screen browser.
+           Covering and revealing are the same slide, in two directions.
+           PANIC SEMANTICS: cover() is a pure cover and nothing more.
+           It only moves the hub layer over the container — it never
+           navigates, never touches the panes or their frames, never
+           resets a frame's src and never tears down any DOM — so a
+           framed page underneath keeps its scroll position and any
+           unsaved form work, exactly as it was, when uncovered. The
+           only code that ever sets a frame's src is loadInto(), run
+           from the container's own address bars. (The small brand
+           link in the title bar is the deliberate exception to the
+           no-navigation rule: it is the home link, not the panic,
+           and leaving on purpose is allowed to unload.) */
+        var hubView = document.getElementById('hubView');
+        var frame = document.getElementById('frame');
+        var input = document.getElementById('addrInput');
+        var autoPanic = document.getElementById('autoPanic');
+        var emptyState = document.getElementById('emptyState');
+        var loadingState = document.getElementById('loadingState');
+        var blockedState = document.getElementById('blockedState');
+        var errorState = document.getElementById('errorState');
+        var openTabLink = document.getElementById('openTabLink');
+        var panesEl = document.getElementById('panes');
+        var pane1 = document.getElementById('pane1');
+        var pane2 = document.getElementById('pane2');
+        var divider = document.getElementById('divider');
+        var splitBtn = document.getElementById('splitBtn');
+        var frame2 = document.getElementById('frame2');
+        var input2 = document.getElementById('addrInput2');
+        var pane2Empty = document.getElementById('pane2Empty');
+        var pane2Loading = document.getElementById('pane2Loading');
+        var pane2Blocked = document.getElementById('pane2Blocked');
+        var pane2TabLink = document.getElementById('pane2TabLink');
+
+        var covered = true;
+        var currentUrl = '';
+        var frameLoaded = false;
+        var loadTimer = null;
+        var currentUrl2 = '';
+        var frame2Loaded = false;
+        var loadTimer2 = null;
+
+        function cover() {
+          if (covered) return;
+          covered = true;
+          document.body.classList.remove('browsing');
+        }
+        function uncover() {
+          if (!covered) return;
+          covered = false;
+          document.body.classList.add('browsing');
+        }
+
+        document.getElementById('panicBtn').addEventListener('click', cover);
+
+        /* ================= the Guide page =================
+           A routine page of the site, opened from the hub footer's
+           plain Guide link. Its wordmark is a genuine home link.
+           One ordinary word inside its text — styled exactly like
+           every other word, at rest and on hover — is the doorway
+           into this container; it is now the only secret door. */
+        var guideView = document.getElementById('guideView');
+        function openGuide() {
+          guideView.scrollTop = 0;
+          document.body.classList.add('guide-open');
+        }
+        function closeGuide() {
+          document.body.classList.remove('guide-open');
+        }
+        document.getElementById('guideLink').addEventListener('click', function (e) {
+          e.preventDefault();
+          openGuide();
+        });
+        document.getElementById('guideHome').addEventListener('click', function (e) {
+          e.preventDefault();
+          closeGuide();
+          hubView.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+        });
+        /* The doorway is a transformation, not a navigation: the
+           Guide and the container are the same page. Tapping the
+           word first collapses the Guide's own content away —
+           height and opacity together, in place — and only then
+           fades the emptied Guide layer out while the hub slides
+           away, so the browser viewer, already mounted underneath,
+           expands to fill the page the text vacated. Nothing is
+           replaced by a separate screen, and no frame is touched. */
+        var guideInner = guideView.querySelector('.guide-inner');
+        var transforming = false;
+        document.getElementById('guideDoor').addEventListener('click', function () {
+          if (transforming) return;
+          if (reduceMotion) { closeGuide(); uncover(); return; }
+          transforming = true;
+          guideInner.style.height = guideInner.offsetHeight + 'px';
+          guideInner.style.overflow = 'hidden';
+          guideInner.style.transition =
+            'height 0.55s cubic-bezier(0.32, 0.72, 0.24, 1),' +
+            ' opacity 0.45s ease,' +
+            ' transform 0.55s cubic-bezier(0.32, 0.72, 0.24, 1),' +
+            ' padding-top 0.55s cubic-bezier(0.32, 0.72, 0.24, 1),' +
+            ' padding-bottom 0.55s cubic-bezier(0.32, 0.72, 0.24, 1)';
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              guideInner.style.height = '0px';
+              guideInner.style.opacity = '0';
+              guideInner.style.transform = 'translateY(12px) scale(0.985)';
+              guideInner.style.paddingTop = '0px';
+              guideInner.style.paddingBottom = '0px';
+            });
+          });
+          setTimeout(function () {
+            guideView.style.transition = 'opacity 0.35s ease';
+            guideView.style.opacity = '0';
+            uncover();
+          }, 580);
+          setTimeout(function () { closeGuide(); }, 980);
+          /* Reset only once the emptied layer has finished sliding
+             away and is visibility-hidden, so the Guide reopens
+             intact next time. */
+          setTimeout(function () {
+            guideView.style.transition = '';
+            guideView.style.opacity = '';
+            guideInner.style.cssText = '';
+            transforming = false;
+          }, 1600);
+        });
+        /* The same quiet doorway, reversed: the title bar's
+           "Container" label covers again (the visible Work Hub
+           button and Esc stay as plain backups). */
+        document.getElementById('shellDoor').addEventListener('click', cover);
+        /* The wordmark is a real home link: it navigates to the hub's
+           home view — cover the container if it is open, and return
+           the hub to its top. */
+        document.getElementById('brandHome').addEventListener('click', function (e) {
+          e.preventDefault();
+          cover();
+          hubView.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+        });
+
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' || e.key === 'Esc') {
+            if (document.body.classList.contains('guide-open')) closeGuide();
+            else if (covered) uncover(); else cover();
+          }
+        });
+
+        /* Auto-cover: slide the hub back over by itself when the window
+           loses focus. Clicking into the framed page also blurs this
+           window, so that case is checked for and ignored. */
+        window.addEventListener('blur', function () {
+          if (!autoPanic.checked || covered) return;
+          if (document.activeElement === frame || document.activeElement === frame2) return;
+          cover();
+        });
+        document.addEventListener('visibilitychange', function () {
+          if (document.hidden && autoPanic.checked) cover();
+        });
+
+        /* ================= browser plumbing =================
+           The container is a self-contained browser: addresses and
+           plain-word searches typed into its own bars load into its
+           panes, under the panic cover. A site that refuses to be
+           framed lands on the blocked card, whose new-tab link is
+           the deliberate escape hatch. */
+        function showStage(which) {
+          emptyState.hidden = which !== 'empty';
+          loadingState.hidden = which !== 'loading';
+          blockedState.hidden = which !== 'blocked';
+          errorState.hidden = which !== 'error';
+          frame.hidden = which !== 'frame';
+        }
+        function showPane2(which) {
+          pane2Empty.hidden = which !== 'empty';
+          pane2Loading.hidden = which !== 'loading';
+          pane2Blocked.hidden = which !== 'blocked';
+          frame2.hidden = which !== 'frame';
+        }
+
+        function frameWasBlocked(f) {
+          /* A frame that actually loaded a cross-origin page reports a
+             null contentDocument. A refused frame instead commits an
+             empty about:blank document, which stays readable — that
+             difference is the signal. */
+          try {
+            var doc = f.contentDocument;
+            if (!doc) return false;
+            if (doc.URL === 'about:blank' && doc.body && doc.body.childNodes.length === 0) return true;
+            return false;
+          } catch (e) {
+            return false;
+          }
+        }
+
+        frame.addEventListener('load', function () {
+          if (!currentUrl) return; /* the initial about:blank */
+          frameLoaded = true;
+          if (loadTimer) { clearTimeout(loadTimer); loadTimer = null; }
+          if (frameWasBlocked(frame)) showStage('blocked');
+          else showStage('frame');
+        });
+        frame2.addEventListener('load', function () {
+          if (!currentUrl2) return;
+          frame2Loaded = true;
+          if (loadTimer2) { clearTimeout(loadTimer2); loadTimer2 = null; }
+          if (frameWasBlocked(frame2)) showPane2('blocked');
+          else showPane2('frame');
+        });
+
+        /* An address, or plain words to search for. Words load a
+           DuckDuckGo results page into the pane — it allows framing,
+           which the big search engines refuse. */
+        function resolveInput(text) {
+          text = (text || '').trim();
+          if (!text) return null;
+          if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(text)) {
+            try {
+              var p = new URL(text);
+              if (p.protocol === 'http:' || p.protocol === 'https:') return p.href;
+            } catch (e) { /* fall through to error */ }
+            return 'error';
+          }
+          if (/\s/.test(text) || (text.indexOf('.') === -1 && text.indexOf('/') === -1)) {
+            return 'https://html.duckduckgo.com/html/?q=' + encodeURIComponent(text);
+          }
+          try { return new URL('https://' + text).href; } catch (e) { return 'error'; }
+        }
+
+        function loadInto(n, raw) {
+          var isMain = n === 1;
+          var inp = isMain ? input : input2;
+          var text = (raw || '').trim();
+          if (!text) { inp.focus(); return; }
+          var url = resolveInput(text);
+          if (!url || url === 'error') {
+            if (isMain) showStage('error');
+            else { showPane2('empty'); inp.focus(); }
+            return;
+          }
+          if (isMain) {
+            currentUrl = url;
+            openTabLink.href = url;
+            frameLoaded = false;
+            showStage('loading');
+            frame.src = url;
+            if (loadTimer) clearTimeout(loadTimer);
+            loadTimer = setTimeout(function () {
+              if (!frameLoaded) showStage('blocked');
+            }, 7000);
+          } else {
+            currentUrl2 = url;
+            pane2TabLink.href = url;
+            frame2Loaded = false;
+            showPane2('loading');
+            frame2.src = url;
+            if (loadTimer2) clearTimeout(loadTimer2);
+            loadTimer2 = setTimeout(function () {
+              if (!frame2Loaded) showPane2('blocked');
+            }, 7000);
+          }
+        }
+        function loadSite(raw) { loadInto(1, raw); }
+
+        document.getElementById('addrForm').addEventListener('submit', function (e) {
+          e.preventDefault();
+          activePane = 1;
+          markTargetPane();
+          loadSite(input.value);
+          input.blur();
+        });
+        document.getElementById('addrForm2').addEventListener('submit', function (e) {
+          e.preventDefault();
+          activePane = 2;
+          markTargetPane();
+          loadInto(2, input2.value);
+          input2.blur();
+        });
+        document.getElementById('exampleBtn').addEventListener('click', function () {
+          input.value = 'example.com';
+          loadSite('example.com');
+        });
+        document.getElementById('exampleBtn2').addEventListener('click', function () {
+          input2.value = 'example.com';
+          loadInto(2, 'example.com');
+        });
+        document.getElementById('retryBtn').addEventListener('click', function () {
+          if (currentUrl) loadSite(currentUrl);
+        });
+        document.getElementById('retryBtn2').addEventListener('click', function () {
+          if (currentUrl2) loadInto(2, currentUrl2);
+        });
+        document.getElementById('errorBackBtn').addEventListener('click', function () {
+          showStage(currentUrl ? 'frame' : 'empty');
+          input.focus();
+        });
+
+        /* ============ panes: which one is the target ============
+           Which pane was last tapped inside the container (pane 1
+           until then). The container is entered only through the
+           Guide doorway; hub links behave like an ordinary link
+           hub's and open in a new browser tab, as their markup says. */
+        var activePane = 1;
+        function markTargetPane() {
+          var on = splitBtn.getAttribute('aria-pressed') === 'true';
+          pane1.classList.toggle('is-target', on && activePane === 1);
+          pane2.classList.toggle('is-target', on && activePane === 2);
+        }
+        pane1.addEventListener('pointerdown', function () {
+          if (activePane !== 1) { activePane = 1; markTargetPane(); }
+        });
+        pane2.addEventListener('pointerdown', function () {
+          if (activePane !== 2) { activePane = 2; markTargetPane(); }
+        });
+
+        /* ================= split screen =================
+           Two panes, one draggable divider. Side by side when the
+           screen is wider than tall, stacked in portrait. Both
+           panes stay inside #browserView, so the panic slide
+           covers both at once. */
+        var splitRatio = 0.5;
+        function applyRatio() {
+          pane1.style.flexGrow = String(Math.round(splitRatio * 1000));
+          pane2.style.flexGrow = String(Math.round((1 - splitRatio) * 1000));
+        }
+        function layoutPanes() {
+          var stacked = window.innerHeight >= window.innerWidth;
+          panesEl.classList.toggle('stacked', stacked);
+          divider.setAttribute('aria-orientation', stacked ? 'horizontal' : 'vertical');
+        }
+        function setSplit(on) {
+          splitBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+          splitBtn.lastChild.textContent = on ? ' Single' : ' Split';
+          pane2.hidden = !on;
+          divider.hidden = !on;
+          if (on) { layoutPanes(); applyRatio(); }
+          else { activePane = 1; }
+          markTargetPane();
+        }
+        splitBtn.addEventListener('click', function () {
+          setSplit(splitBtn.getAttribute('aria-pressed') !== 'true');
+        });
+        window.addEventListener('resize', layoutPanes);
+        layoutPanes();
+
+        var dividerDrag = false;
+        function moveDivider(e) {
+          var r = panesEl.getBoundingClientRect();
+          var ratio = panesEl.classList.contains('stacked')
+            ? (e.clientY - r.top) / r.height
+            : (e.clientX - r.left) / r.width;
+          splitRatio = Math.min(0.82, Math.max(0.18, ratio));
+          applyRatio();
+        }
+        divider.addEventListener('pointerdown', function (e) {
+          dividerDrag = true;
+          try { divider.setPointerCapture(e.pointerId); } catch (err) { /* older browser */ }
+          panesEl.classList.add('dragging');
+          moveDivider(e);
+          e.preventDefault();
+        });
+        divider.addEventListener('pointermove', function (e) {
+          if (dividerDrag) moveDivider(e);
+        });
+        function endDividerDrag() {
+          dividerDrag = false;
+          panesEl.classList.remove('dragging');
+        }
+        divider.addEventListener('pointerup', endDividerDrag);
+        divider.addEventListener('pointercancel', endDividerDrag);
+        divider.addEventListener('keydown', function (e) {
+          var step = 0.04, used = true;
+          var stacked = panesEl.classList.contains('stacked');
+          if ((e.key === 'ArrowLeft' && !stacked) || (e.key === 'ArrowUp' && stacked)) splitRatio -= step;
+          else if ((e.key === 'ArrowRight' && !stacked) || (e.key === 'ArrowDown' && stacked)) splitRatio += step;
+          else used = false;
+          if (used) {
+            splitRatio = Math.min(0.82, Math.max(0.18, splitRatio));
+            applyRatio();
+            e.preventDefault();
+          }
+        });
+
+        /* ================= hub header ================= */
+        var now0 = new Date();
+        document.getElementById('hubDate').textContent =
+          now0.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        var hour = now0.getHours();
+        var greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+        document.getElementById('hubGreeting').textContent = greet + ' — your workday, in one place.';
+
+        document.getElementById('searchForm').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var q = document.getElementById('searchInput').value.trim();
+          if (!q) return;
+          /* Search behaves like an ordinary site's search box: it
+             navigates this page itself to the results — the same
+             DuckDuckGo results page the container's address bar
+             uses for plain-word searches. */
+          window.location.assign('https://html.duckduckgo.com/html/?q=' + encodeURIComponent(q));
+        });
+
+        /* ================= shared helpers ================= */
+        function fmtBytes(n) {
+          if (n < 1024) return n + ' B';
+          if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+          return (n / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+        function wordCount(s) {
+          var m = s.trim().match(/\S+/g);
+          return m ? m.length : 0;
+        }
+
+        /* ================= image converter ================= */
+        var imgFile = document.getElementById('imgFile');
+        var imgDrop = document.getElementById('imgDrop');
+        var imgControls = document.getElementById('imgControls');
+        var imgFormat = document.getElementById('imgFormat');
+        var imgQuality = document.getElementById('imgQuality');
+        var qualityVal = document.getElementById('qualityVal');
+        var imgMaxDim = document.getElementById('imgMaxDim');
+        var imgResult = document.getElementById('imgResult');
+        var imgPreview = document.getElementById('imgPreview');
+        var imgStats = document.getElementById('imgStats');
+        var imgDownload = document.getElementById('imgDownload');
+        var imgStatus = document.getElementById('imgStatus');
+
+        var srcImage = null;      /* HTMLImageElement */
+        var srcFile = null;       /* File */
+        var srcDims = '';
+        var outUrl = null;
+
+        imgDrop.addEventListener('click', function () { imgFile.click(); });
+        imgDrop.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); imgFile.click(); }
+        });
+        ['dragenter', 'dragover'].forEach(function (ev) {
+          imgDrop.addEventListener(ev, function (e) { e.preventDefault(); imgDrop.classList.add('drag'); });
+        });
+        ['dragleave', 'drop'].forEach(function (ev) {
+          imgDrop.addEventListener(ev, function (e) { e.preventDefault(); imgDrop.classList.remove('drag'); });
+        });
+        imgDrop.addEventListener('drop', function (e) {
+          var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+          if (f) loadImageFile(f);
+        });
+        imgFile.addEventListener('change', function () {
+          if (imgFile.files && imgFile.files[0]) loadImageFile(imgFile.files[0]);
+        });
+
+        function setImgStatus(msg, cls) {
+          imgStatus.textContent = msg || '';
+          imgStatus.className = 'status-line' + (cls ? ' ' + cls : '');
+        }
+
+        function loadImageFile(f) {
+          if (!/^image\//.test(f.type) && !/\.(png|jpe?g|webp|gif|bmp)$/i.test(f.name)) {
+            setImgStatus('That file is not an image.', 'err');
+            imgControls.hidden = false;
+            return;
+          }
+          srcFile = f;
+          var url = URL.createObjectURL(f);
+          var im = new Image();
+          im.onload = function () {
+            srcImage = im;
+            srcDims = im.naturalWidth + ' × ' + im.naturalHeight + ' px';
+            imgControls.hidden = false;
+            setImgStatus('Loaded ' + f.name + ' (' + fmtBytes(f.size) + ').', 'ok');
+            convertImage();
+          };
+          im.onerror = function () {
+            URL.revokeObjectURL(url);
+            setImgStatus('Could not read that image file.', 'err');
+          };
+          im.src = url;
+        }
+
+        function convertImage() {
+          if (!srcImage || !srcFile) return;
+          var maxDim = parseInt(imgMaxDim.value, 10) || 0;
+          var w = srcImage.naturalWidth, h = srcImage.naturalHeight;
+          if (maxDim > 0 && Math.max(w, h) > maxDim) {
+            var scale = maxDim / Math.max(w, h);
+            w = Math.max(1, Math.round(w * scale));
+            h = Math.max(1, Math.round(h * scale));
+          }
+          var canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          var ctx = canvas.getContext('2d');
+          if (imgFormat.value === 'image/jpeg') {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, w, h);
+          }
+          ctx.drawImage(srcImage, 0, 0, w, h);
+          var q = parseInt(imgQuality.value, 10) / 100;
+          canvas.toBlob(function (blob) {
+            if (!blob) { setImgStatus('Conversion failed for that format.', 'err'); return; }
+            if (outUrl) URL.revokeObjectURL(outUrl);
+            outUrl = URL.createObjectURL(blob);
+            var wantExt = imgFormat.value === 'image/png' ? 'png' : imgFormat.value === 'image/webp' ? 'webp' : imgFormat.value === 'image/avif' ? 'avif' : 'jpg';
+            var ext = blob.type === 'image/png' ? 'png' : blob.type === 'image/jpeg' ? 'jpg' : blob.type === 'image/webp' ? 'webp' : blob.type === 'image/avif' ? 'avif' : wantExt;
+            var base = srcFile.name.replace(/\.[^.]*$/, '') || 'image';
+            imgDownload.href = outUrl;
+            imgDownload.setAttribute('download', base + '-converted.' + ext);
+            imgPreview.src = outUrl;
+            var diff = blob.size - srcFile.size;
+            var diffTxt = diff === 0 ? 'same size' :
+              (diff < 0 ? fmtBytes(-diff) + ' smaller' : fmtBytes(diff) + ' larger');
+            imgStats.textContent = '';
+            var s1 = document.createElement('div');
+            var s1name = document.createElement('strong');
+            s1name.textContent = base + '-converted.' + ext;
+            s1.appendChild(s1name);
+            var s2 = document.createElement('div');
+            s2.textContent = srcDims + ' → ' + w + ' × ' + h + ' px';
+            var s3 = document.createElement('div');
+            s3.textContent = fmtBytes(srcFile.size) + ' → ' + fmtBytes(blob.size) + ' (' + diffTxt + ')';
+            imgStats.appendChild(s1); imgStats.appendChild(s2); imgStats.appendChild(s3);
+            imgResult.hidden = false;
+            if (blob.type && blob.type !== imgFormat.value) {
+              setImgStatus('This browser cannot write ' + wantExt.toUpperCase() + ', so it converted to ' + ext.toUpperCase() + ' instead — still entirely on this device.', 'ok');
+            } else {
+              setImgStatus('Converted entirely on this device.', 'ok');
+            }
+          }, imgFormat.value, q);
+        }
+
+        imgQuality.addEventListener('input', function () {
+          qualityVal.textContent = imgQuality.value + '%';
+          convertImage();
+        });
+        imgFormat.addEventListener('change', convertImage);
+        imgMaxDim.addEventListener('change', convertImage);
+
+        /* ================= audio extractor / converter ================= */
+        var audioFileEl = document.getElementById('audioFile');
+        var audioDrop = document.getElementById('audioDrop');
+        var audioControls = document.getElementById('audioControls');
+        var audioFormat = document.getElementById('audioFormat');
+        var audioConvertBtn = document.getElementById('audioConvertBtn');
+        var audioResult = document.getElementById('audioResult');
+        var audioStats = document.getElementById('audioStats');
+        var audioDownload = document.getElementById('audioDownload');
+        var audioStatus = document.getElementById('audioStatus');
+        var audioSrcFile = null;
+        var audioOutUrl = null;
+
+        function setAudioStatus(msg, cls) {
+          audioStatus.textContent = msg || '';
+          audioStatus.className = 'status-line' + (cls ? ' ' + cls : '');
+        }
+        audioDrop.addEventListener('click', function () { audioFileEl.click(); });
+        audioDrop.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); audioFileEl.click(); }
+        });
+        ['dragenter', 'dragover'].forEach(function (ev) {
+          audioDrop.addEventListener(ev, function (e) { e.preventDefault(); audioDrop.classList.add('drag'); });
+        });
+        ['dragleave', 'drop'].forEach(function (ev) {
+          audioDrop.addEventListener(ev, function (e) { e.preventDefault(); audioDrop.classList.remove('drag'); });
+        });
+        audioDrop.addEventListener('drop', function (e) {
+          var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+          if (f) loadAudioFile(f);
+        });
+        audioFileEl.addEventListener('change', function () {
+          if (audioFileEl.files && audioFileEl.files[0]) loadAudioFile(audioFileEl.files[0]);
+        });
+        function loadAudioFile(f) {
+          audioSrcFile = f;
+          audioControls.hidden = false;
+          audioResult.hidden = true;
+          setAudioStatus('Loaded ' + f.name + ' (' + fmtBytes(f.size) + '). Choose a format and convert.', 'ok');
+        }
+
+        function audioBufferToWav(buffer) {
+          var channels = buffer.numberOfChannels > 1 ? 2 : 1;
+          var rate = buffer.sampleRate;
+          var len = buffer.length;
+          var chans = [];
+          for (var c = 0; c < channels; c++) chans.push(buffer.getChannelData(c));
+          var bytes = 44 + len * channels * 2;
+          var ab = new ArrayBuffer(bytes);
+          var v = new DataView(ab);
+          function wstr(off, s) { for (var i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); }
+          wstr(0, 'RIFF'); v.setUint32(4, bytes - 8, true); wstr(8, 'WAVE');
+          wstr(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true);
+          v.setUint16(22, channels, true); v.setUint32(24, rate, true);
+          v.setUint32(28, rate * channels * 2, true); v.setUint16(32, channels * 2, true);
+          v.setUint16(34, 16, true); wstr(36, 'data'); v.setUint32(40, len * channels * 2, true);
+          var off = 44;
+          for (var i = 0; i < len; i++) {
+            for (var ch = 0; ch < channels; ch++) {
+              var s = Math.max(-1, Math.min(1, chans[ch][i]));
+              v.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+              off += 2;
+            }
+          }
+          return new Blob([ab], { type: 'audio/wav' });
+        }
+
+        function finishAudio(blob, ext, durationSec) {
+          if (audioOutUrl) URL.revokeObjectURL(audioOutUrl);
+          audioOutUrl = URL.createObjectURL(blob);
+          var base = audioSrcFile.name.replace(/\.[^.]*$/, '') || 'audio';
+          audioDownload.href = audioOutUrl;
+          audioDownload.setAttribute('download', base + '-audio.' + ext);
+          audioStats.textContent = '';
+          var a1 = document.createElement('div');
+          var a1n = document.createElement('strong');
+          a1n.textContent = base + '-audio.' + ext;
+          a1.appendChild(a1n);
+          var a2 = document.createElement('div');
+          a2.textContent = fmtBytes(blob.size) + (durationSec ? ' · ' + durationSec.toFixed(1) + ' seconds' : '');
+          audioStats.appendChild(a1); audioStats.appendChild(a2);
+          audioResult.hidden = false;
+          audioConvertBtn.disabled = false;
+          setAudioStatus('Converted entirely on this device — nothing was uploaded.', 'ok');
+        }
+
+        audioConvertBtn.addEventListener('click', function () {
+          if (!audioSrcFile) { setAudioStatus('Choose a file first.', 'err'); return; }
+          audioConvertBtn.disabled = true;
+          setAudioStatus('Reading the file on this device…', '');
+          audioSrcFile.arrayBuffer().then(function (ab) {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) throw new Error('This browser has no Web Audio support.');
+            var ctx = new AC();
+            return ctx.decodeAudioData(ab).then(function (buffer) {
+              if (audioFormat.value === 'wav') {
+                var blob = audioBufferToWav(buffer);
+                if (ctx.close) ctx.close();
+                finishAudio(blob, 'wav', buffer.duration);
+                return;
+              }
+              /* Opus: play the decoded audio (silently — it goes to a
+                 recording stream, not the speakers) through a
+                 MediaRecorder using an Opus codec, in real time. */
+              if (!window.MediaRecorder) {
+                if (ctx.close) ctx.close();
+                throw new Error('This browser cannot record Opus. Choose WAV instead.');
+              }
+              var dest = ctx.createMediaStreamDestination();
+              var mimes = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/webm'];
+              var mime = '';
+              for (var i = 0; i < mimes.length; i++) {
+                if (window.MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(mimes[i])) { mime = mimes[i]; break; }
+              }
+              if (!mime) {
+                if (ctx.close) ctx.close();
+                throw new Error('This browser offers no Opus recording format. Choose WAV instead.');
+              }
+              setAudioStatus('Converting to Opus — this plays through in real time (' + buffer.duration.toFixed(0) + 's)…', '');
+              var chunks = [];
+              var rec = new MediaRecorder(dest.stream, { mimeType: mime });
+              rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+              rec.onstop = function () {
+                var blob = new Blob(chunks, { type: mime.split(';')[0] });
+                var ext = mime.indexOf('ogg') !== -1 ? 'opus' : 'webm';
+                if (ctx.close) ctx.close();
+                finishAudio(blob, ext, buffer.duration);
+              };
+              var srcNode = ctx.createBufferSource();
+              srcNode.buffer = buffer;
+              srcNode.connect(dest);
+              rec.start(500);
+              srcNode.start();
+              srcNode.onended = function () { setTimeout(function () { if (rec.state !== 'inactive') rec.stop(); }, 250); };
+            });
+          }).catch(function (err) {
+            audioConvertBtn.disabled = false;
+            setAudioStatus('Could not convert that file: ' + err.message, 'err');
+          });
+        });
+
+        /* ================= file check (SHA-256 + VirusTotal) ================= */
+        var hashFileEl = document.getElementById('hashFile');
+        var hashDrop = document.getElementById('hashDrop');
+        var hashResult = document.getElementById('hashResult');
+        var hashStats = document.getElementById('hashStats');
+        var hashValue = document.getElementById('hashValue');
+        var hashStatus = document.getElementById('hashStatus');
+        var vtLink = document.getElementById('vtLink');
+        var currentHash = '';
+
+        function setHashStatus(msg, cls) {
+          hashStatus.textContent = msg || '';
+          hashStatus.className = 'status-line' + (cls ? ' ' + cls : '');
+        }
+        hashDrop.addEventListener('click', function () { hashFileEl.click(); });
+        hashDrop.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); hashFileEl.click(); }
+        });
+        ['dragenter', 'dragover'].forEach(function (ev) {
+          hashDrop.addEventListener(ev, function (e) { e.preventDefault(); hashDrop.classList.add('drag'); });
+        });
+        ['dragleave', 'drop'].forEach(function (ev) {
+          hashDrop.addEventListener(ev, function (e) { e.preventDefault(); hashDrop.classList.remove('drag'); });
+        });
+        hashDrop.addEventListener('drop', function (e) {
+          var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+          if (f) hashFile(f);
+        });
+        hashFileEl.addEventListener('change', function () {
+          if (hashFileEl.files && hashFileEl.files[0]) hashFile(hashFileEl.files[0]);
+          hashFileEl.value = '';
+        });
+        function hashFile(f) {
+          if (!(window.crypto && crypto.subtle && crypto.subtle.digest)) {
+            setHashStatus('This browser cannot compute fingerprints here (it needs a secure page).', 'err');
+            return;
+          }
+          setHashStatus('Fingerprinting ' + f.name + ' on this device…', '');
+          hashResult.hidden = true;
+          f.arrayBuffer().then(function (ab) {
+            return crypto.subtle.digest('SHA-256', ab);
+          }).then(function (digest) {
+            var bytes = new Uint8Array(digest), hex = '';
+            for (var i = 0; i < bytes.length; i++) hex += ('0' + bytes[i].toString(16)).slice(-2);
+            currentHash = hex;
+            hashStats.textContent = '';
+            var h1 = document.createElement('div');
+            var h1n = document.createElement('strong');
+            h1n.textContent = f.name;
+            h1.appendChild(h1n);
+            var h2 = document.createElement('div');
+            h2.textContent = fmtBytes(f.size) + (f.type ? ' · ' + f.type : '');
+            hashStats.appendChild(h1); hashStats.appendChild(h2);
+            hashValue.textContent = 'SHA-256  ' + hex;
+            vtLink.href = 'https://www.virustotal.com/gui/search/' + hex;
+            hashResult.hidden = false;
+            setHashStatus('Fingerprint ready — computed on this device; the file itself never left it.', 'ok');
+          }).catch(function (err) {
+            setHashStatus('Could not fingerprint that file: ' + err.message, 'err');
+          });
+        }
+        document.getElementById('hashCopyBtn').addEventListener('click', function () {
+          if (!currentHash) return;
+          function done() { setHashStatus('Fingerprint copied.', 'ok'); }
+          function fail() { setHashStatus('Copy is blocked here — select the fingerprint and copy it manually.', 'err'); }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(currentHash).then(done, fail);
+          } else fail();
+        });
+
+        /* ================= text & data converter ================= */
+        var txtIn = document.getElementById('txtIn');
+        var txtOut = document.getElementById('txtOut');
+        var txtStatus = document.getElementById('txtStatus');
+        var txtInCount = document.getElementById('txtInCount');
+        var txtOutCount = document.getElementById('txtOutCount');
+        var outExt = 'txt';
+
+        function setTxtStatus(msg, cls) {
+          txtStatus.textContent = msg || '';
+          txtStatus.className = 'status-line' + (cls ? ' ' + cls : '');
+        }
+        function refreshCounts() {
+          txtInCount.textContent = txtIn.value.length + ' characters · ' + wordCount(txtIn.value) + ' words';
+          txtOutCount.textContent = txtOut.value.length + ' characters';
+        }
+        txtIn.addEventListener('input', refreshCounts);
+
+        function b64Encode(str) {
+          var bytes = new TextEncoder().encode(str);
+          var bin = '';
+          var CHUNK = 0x8000;
+          for (var i = 0; i < bytes.length; i += CHUNK) {
+            bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+          }
+          return btoa(bin);
+        }
+        function b64Decode(str) {
+          var bin = atob(str.replace(/\s+/g, ''));
+          var bytes = new Uint8Array(bin.length);
+          for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          return new TextDecoder().decode(bytes);
+        }
+        function parseCsv(text) {
+          var rows = [], row = [], field = '', inQ = false, i, c;
+          text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+          for (i = 0; i < text.length; i++) {
+            c = text[i];
+            if (inQ) {
+              if (c === '"') {
+                if (text[i + 1] === '"') { field += '"'; i++; }
+                else inQ = false;
+              } else field += c;
+            } else if (c === '"') { inQ = true; }
+            else if (c === ',') { row.push(field); field = ''; }
+            else if (c === '\n') { row.push(field); field = ''; rows.push(row); row = []; }
+            else field += c;
+          }
+          if (field !== '' || row.length) { row.push(field); rows.push(row); }
+          return rows.filter(function (r) { return !(r.length === 1 && r[0] === ''); });
+        }
+        function csvToJson(text) {
+          var rows = parseCsv(text);
+          if (rows.length < 2) throw new Error('CSV needs a header row and at least one data row.');
+          var headers = rows[0];
+          var objs = rows.slice(1).map(function (r) {
+            var o = {};
+            headers.forEach(function (h, idx) { o[h] = idx < r.length ? r[idx] : ''; });
+            return o;
+          });
+          return JSON.stringify(objs, null, 2);
+        }
+        function csvCell(v) {
+          var s = v === null || v === undefined ? '' : String(v);
+          return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        }
+        function jsonToCsv(text) {
+          var data = JSON.parse(text);
+          var arr = Array.isArray(data) ? data : [data];
+          if (!arr.length || typeof arr[0] !== 'object' || arr[0] === null) {
+            throw new Error('JSON needs to be an array of objects (or a single object).');
+          }
+          var headers = [];
+          arr.forEach(function (o) {
+            Object.keys(o).forEach(function (k) { if (headers.indexOf(k) === -1) headers.push(k); });
+          });
+          var lines = [headers.map(csvCell).join(',')];
+          arr.forEach(function (o) {
+            lines.push(headers.map(function (h) {
+              var v = o[h];
+              return csvCell(typeof v === 'object' && v !== null ? JSON.stringify(v) : v);
+            }).join(','));
+          });
+          return lines.join('\n');
+        }
+
+        var ops = {
+          b64enc: function (s) { return b64Encode(s); },
+          b64dec: function (s) { return b64Decode(s); },
+          urlenc: function (s) { return encodeURIComponent(s); },
+          urldec: function (s) { return decodeURIComponent(s.replace(/\+/g, ' ')); },
+          jsonfmt: function (s) { return JSON.stringify(JSON.parse(s), null, 2); },
+          jsonmin: function (s) { return JSON.stringify(JSON.parse(s)); },
+          csvjson: function (s) { return csvToJson(s); },
+          jsoncsv: function (s) { return jsonToCsv(s); },
+          htmlenc: function (s) {
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+          },
+          htmldec: function (s) {
+            var t = document.createElement('textarea');
+            t.innerHTML = s;
+            return t.value;
+          },
+          hexenc: function (s) {
+            var bytes = new TextEncoder().encode(s), out = [];
+            for (var i = 0; i < bytes.length; i++) out.push(('0' + bytes[i].toString(16)).slice(-2));
+            return out.join(' ');
+          },
+          hexdec: function (s) {
+            var clean = s.replace(/0x/gi, '').replace(/[^0-9a-fA-F]/g, '');
+            if (clean.length % 2) throw new Error('Hex text has an odd number of digits.');
+            var bytes = new Uint8Array(clean.length / 2);
+            for (var i = 0; i < bytes.length; i++) bytes[i] = parseInt(clean.substr(i * 2, 2), 16);
+            return new TextDecoder().decode(bytes);
+          },
+          dedupe: function (s) {
+            var seen = {}, out = [];
+            s.split('\n').forEach(function (line) {
+              if (!seen[line]) { seen[line] = 1; out.push(line); }
+            });
+            return out.join('\n');
+          },
+          sortlines: function (s) {
+            return s.split('\n').sort(function (a, b) { return a.localeCompare(b); }).join('\n');
+          },
+          upper: function (s) { return s.toUpperCase(); },
+          lower: function (s) { return s.toLowerCase(); },
+          title: function (s) {
+            return s.toLowerCase().replace(/(^|[\s\-_/])(\S)/g, function (m, p1, p2) { return p1 + p2.toUpperCase(); });
+          }
+        };
+        var jsonOps = { jsonfmt: 1, jsonmin: 1, csvjson: 1 };
+
+        Array.prototype.forEach.call(document.querySelectorAll('[data-op]'), function (btn) {
+          btn.addEventListener('click', function () {
+            var op = btn.getAttribute('data-op');
+            if (!txtIn.value) { setTxtStatus('Paste something in the left box first.', 'err'); return; }
+            try {
+              txtOut.value = ops[op](txtIn.value);
+              outExt = op === 'jsoncsv' ? 'csv' : (jsonOps[op] ? 'json' : 'txt');
+              setTxtStatus('Done — converted on this device.', 'ok');
+            } catch (err) {
+              setTxtStatus('Could not convert: ' + err.message, 'err');
+            }
+            refreshCounts();
+          });
+        });
+
+        var txtFile = document.getElementById('txtFile');
+        document.getElementById('txtLoadBtn').addEventListener('click', function () { txtFile.click(); });
+        txtFile.addEventListener('change', function () {
+          var f = txtFile.files && txtFile.files[0];
+          if (!f) return;
+          var reader = new FileReader();
+          reader.onload = function () {
+            txtIn.value = String(reader.result || '');
+            refreshCounts();
+            setTxtStatus('Loaded ' + f.name + ' (' + fmtBytes(f.size) + ') from this device.', 'ok');
+          };
+          reader.onerror = function () { setTxtStatus('Could not read that file.', 'err'); };
+          reader.readAsText(f);
+          txtFile.value = '';
+        });
+
+        document.getElementById('txtCopyBtn').addEventListener('click', function () {
+          if (!txtOut.value) { setTxtStatus('Nothing to copy yet.', 'err'); return; }
+          function done() { setTxtStatus('Result copied.', 'ok'); }
+          function fail() {
+            txtOut.focus(); txtOut.select();
+            setTxtStatus('Copy is blocked here — the result is selected, copy it manually.', 'err');
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txtOut.value).then(done, fail);
+          } else fail();
+        });
+        document.getElementById('txtDownloadBtn').addEventListener('click', function () {
+          if (!txtOut.value) { setTxtStatus('Nothing to download yet.', 'err'); return; }
+          var blob = new Blob([txtOut.value], { type: 'text/plain;charset=utf-8' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.setAttribute('download', 'converted.' + outExt);
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+          setTxtStatus('Result downloaded.', 'ok');
+        });
+        document.getElementById('txtSwapBtn').addEventListener('click', function () {
+          if (!txtOut.value) return;
+          txtIn.value = txtOut.value;
+          txtOut.value = '';
+          refreshCounts();
+          setTxtStatus('', '');
+        });
+        refreshCounts();
+
+        /* ================= focus timer ================= */
+        var timerDisplay = document.getElementById('timerDisplay');
+        var timerStatus = document.getElementById('timerStatus');
+        var timerStartBtn = document.getElementById('timerStartBtn');
+        var timerTotal = 25 * 60, timerLeft = timerTotal, timerInt = null;
+
+        function timerRender() {
+          var m = Math.floor(timerLeft / 60), s = timerLeft % 60;
+          timerDisplay.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+        }
+        function timerStop() {
+          if (timerInt) { clearInterval(timerInt); timerInt = null; }
+          timerStartBtn.textContent = 'Start';
+        }
+        function timerSet(mins) {
+          timerStop();
+          timerTotal = mins * 60;
+          timerLeft = timerTotal;
+          timerStatus.textContent = 'Ready when you are.';
+          timerRender();
+        }
+        timerStartBtn.addEventListener('click', function () {
+          if (timerInt) {
+            timerStop();
+            timerStatus.textContent = 'Paused.';
+            return;
+          }
+          if (timerLeft <= 0) timerLeft = timerTotal;
+          timerStatus.textContent = 'Running…';
+          timerStartBtn.textContent = 'Pause';
+          timerInt = setInterval(function () {
+            timerLeft--;
+            timerRender();
+            if (timerLeft <= 0) {
+              timerStop();
+              timerStatus.textContent = "Time's up — nice work.";
+            }
+          }, 1000);
+        });
+        document.getElementById('timerResetBtn').addEventListener('click', function () {
+          timerSet(timerTotal / 60);
+        });
+        Array.prototype.forEach.call(document.querySelectorAll('.timer-modes .btn'), function (btn) {
+          btn.addEventListener('click', function () {
+            Array.prototype.forEach.call(document.querySelectorAll('.timer-modes .btn'), function (b) {
+              b.setAttribute('aria-pressed', 'false');
+            });
+            btn.setAttribute('aria-pressed', 'true');
+            timerSet(parseInt(btn.getAttribute('data-mins'), 10));
+          });
+        });
+        timerRender();
+
+        /* ================= scratchpad ================= */
+        var padArea = document.getElementById('padArea');
+        var padCount = document.getElementById('padCount');
+        padArea.addEventListener('input', function () {
+          padCount.textContent = padArea.value.length + ' characters · ' + wordCount(padArea.value) + ' words';
+        });
+
+        /* ================= world clock ================= */
+        var clockList = document.getElementById('clockList');
+        var zones = [
+          { label: 'Local time', tz: null },
+          { label: 'New York', tz: 'America/New_York' },
+          { label: 'London', tz: 'Europe/London' },
+          { label: 'Tokyo', tz: 'Asia/Tokyo' }
+        ];
+        var clockRows = zones.map(function (z) {
+          var row = document.createElement('div');
+          row.className = 'clock-row';
+          var city = document.createElement('span');
+          city.className = 'clock-city';
+          city.textContent = z.label;
+          var val = document.createElement('span');
+          var time = document.createElement('span');
+          time.className = 'clock-time';
+          var day = document.createElement('span');
+          day.className = 'clock-day';
+          val.appendChild(time); val.appendChild(day);
+          row.appendChild(city); row.appendChild(val);
+          clockList.appendChild(row);
+          return { tz: z.tz, time: time, day: day };
+        });
+        function tickClocks() {
+          var now = new Date();
+          clockRows.forEach(function (r) {
+            var opts = { hour: 'numeric', minute: '2-digit' };
+            var dopts = { weekday: 'short' };
+            if (r.tz) { opts.timeZone = r.tz; dopts.timeZone = r.tz; }
+            r.time.textContent = now.toLocaleTimeString(undefined, opts);
+            r.day.textContent = now.toLocaleDateString(undefined, dopts);
+          });
+        }
+        tickClocks();
+        setInterval(tickClocks, 1000);
+
+        /* ================= section nav (dock + glass slider) ======
+           Both navs drive the same six targets. Clicking scrolls the
+           hub; scrolling the hub moves the active marker (dock dot /
+           glass lens) via scroll-spy. */
+        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var navBtns = Array.prototype.slice.call(document.querySelectorAll('[data-nav-target]'));
+        var navTargets = [];
+        var seenTargets = {};
+        navBtns.forEach(function (b) {
+          var id = b.getAttribute('data-nav-target');
+          if (!seenTargets[id]) {
+            seenTargets[id] = true;
+            var el = document.getElementById(id);
+            if (el) navTargets.push({ id: id, el: el });
+          }
+        });
+        var activeNavId = navTargets.length ? navTargets[0].id : null;
+
+        var glassNav = document.getElementById('glassNav');
+        var glassLens = document.getElementById('glassLens');
+
+        var glassItems = glassNav ? glassNav.querySelector('.glass-items') : null;
+
+        function placeLens() {
+          if (!glassNav || window.innerWidth > 860) return;
+          var btn = glassNav.querySelector('[data-nav-target="' + activeNavId + '"]');
+          if (!btn) return;
+          glassLens.style.width = btn.offsetWidth + 'px';
+          /* Centre the lens on the item, exactly: btn.offsetLeft is
+             measured from .glass-items, but the lens is positioned
+             from the bar's own padding edge — the items wrapper's own
+             offset (the bar's 6px padding) has to be added back, or
+             the lens sits that far LEFT of the item it selects. That
+             missing offset was the left shift. */
+          var itemsOffset = glassItems ? glassItems.offsetLeft : 0;
+          glassLens.style.transform = 'translateX(' + (itemsOffset + btn.offsetLeft) + 'px)';
+        }
+
+        function setActiveNav(id) {
+          if (id === activeNavId && navBtns.length && navBtns[0].classList.contains('is-active')) { placeLens(); return; }
+          activeNavId = id;
+          navBtns.forEach(function (b) {
+            var on = b.getAttribute('data-nav-target') === id;
+            b.classList.toggle('is-active', on);
+            if (on) b.setAttribute('aria-current', 'true');
+            else b.removeAttribute('aria-current');
+          });
+          placeLens();
+        }
+
+        function goToSection(id) {
+          var el = document.getElementById(id);
+          if (!el) return;
+          setActiveNav(id);
+          hubView.scrollTo({
+            top: Math.max(0, el.offsetTop - 14),
+            behavior: reduceMotion ? 'auto' : 'smooth'
+          });
+        }
+
+        navBtns.forEach(function (b) {
+          b.addEventListener('click', function () { goToSection(b.getAttribute('data-nav-target')); });
+        });
+
+        /* Scroll-spy: the section nearest the upper-middle of the
+           viewport is "current". */
+        var spyQueued = false;
+        function updateSpy() {
+          if (lensDragging) return;
+          var probe = hubView.scrollTop + hubView.clientHeight * 0.38;
+          var current = navTargets.length ? navTargets[0].id : null;
+          navTargets.forEach(function (t) { if (t.el.offsetTop <= probe) current = t.id; });
+          if (current && current !== activeNavId) setActiveNav(current);
+        }
+        hubView.addEventListener('scroll', function () {
+          if (spyQueued) return;
+          spyQueued = true;
+          requestAnimationFrame(function () { spyQueued = false; updateSpy(); });
+        }, { passive: true });
+        window.addEventListener('resize', placeLens);
+        window.addEventListener('load', placeLens);
+        placeLens();
+
+        /* ---------- desktop dock magnification ---------- */
+        var dock = document.getElementById('dock');
+        if (dock && !reduceMotion) {
+          var dockApps = dock.querySelectorAll('.app');
+          var dockMx = -9999;
+          var dockMxSmooth = -9999; /* eased cursor: gives the magnification weight */
+          dock.addEventListener('mousemove', function (e) { dockMx = e.clientX; });
+          dock.addEventListener('mouseleave', function () { dockMx = -9999; dockMxSmooth = -9999; });
+          (function dockLoop() {
+            if (window.innerWidth > 860) {
+              if (dockMxSmooth === -9999) dockMxSmooth = dockMx;
+              else dockMxSmooth += (dockMx - dockMxSmooth) * 0.22;
+              dockApps.forEach(function (a) {
+                var r = a.getBoundingClientRect();
+                var cx = r.left + r.width / 2;
+                var dist = Math.abs(dockMxSmooth - cx);
+                var s = 1 + 0.8 * Math.max(0, 1 - dist / 90);
+                var lift = (s - 1) * 22;
+                a.style.transform = 'scale(' + s.toFixed(3) + ') translateY(' + (-lift).toFixed(1) + 'px)';
+              });
+            }
+            requestAnimationFrame(dockLoop);
+          })();
+        }
+
+        /* ---------- mobile glass lens: drag to slide ---------- */
+        var lensDragging = false;
+        var lensDragMoved = 0;
+        var lensStartX = 0;
+        var suppressNavClick = false;
+
+        function lensDragTo(clientX) {
+          var navRect = glassNav.getBoundingClientRect();
+          var w = glassLens.offsetWidth;
+          /* Work in the lens's own coordinate system (origin at the
+             bar's padding edge) so a drag, placeLens() and
+             nearestTargetId() all agree on where an item's centre is:
+             clientLeft is the bar's border, clientWidth its padding
+             box — mixing these with the outer rect was the other half
+             of the off-centre lens. */
+          var cx = clientX - navRect.left - glassNav.clientLeft;
+          var tx = Math.max(6, Math.min(glassNav.clientWidth - w - 6, cx - w / 2));
+          glassLens.style.transition = 'none';
+          glassLens.style.transform = 'translateX(' + tx + 'px)';
+          return tx + w / 2;
+        }
+        function nearestTargetId(centerX) {
+          var best = null, bestDist = Infinity;
+          var itemsOffset = glassItems ? glassItems.offsetLeft : 0;
+          Array.prototype.forEach.call(glassNav.querySelectorAll('.gnav-item'), function (b) {
+            var c = itemsOffset + b.offsetLeft + b.offsetWidth / 2;
+            var d = Math.abs(c - centerX);
+            if (d < bestDist) { bestDist = d; best = b.getAttribute('data-nav-target'); }
+          });
+          return best;
+        }
+        if (glassNav) {
+          glassNav.addEventListener('pointerdown', function (e) {
+            lensDragging = true; lensDragMoved = 0; lensStartX = e.clientX;
+          });
+          glassNav.addEventListener('pointermove', function (e) {
+            if (!lensDragging) return;
+            lensDragMoved = Math.max(lensDragMoved, Math.abs(e.clientX - lensStartX));
+            if (lensDragMoved > 5) lensDragTo(e.clientX);
+          });
+          var endLensDrag = function (e) {
+            if (!lensDragging) return;
+            lensDragging = false;
+            glassLens.style.transition = '';
+            if (lensDragMoved > 5) {
+              suppressNavClick = true;
+              var center = lensDragTo(e.clientX);
+              glassLens.style.transition = '';
+              var id = nearestTargetId(center);
+              if (id) goToSection(id); else placeLens();
+            } else {
+              placeLens();
+            }
+          };
+          glassNav.addEventListener('pointerup', endLensDrag);
+          glassNav.addEventListener('pointercancel', function () {
+            lensDragging = false; glassLens.style.transition = ''; placeLens();
+          });
+          /* A drag ends over a button, which would also fire click —
+             swallow exactly that one click. */
+          glassNav.addEventListener('click', function (e) {
+            if (suppressNavClick) { suppressNavClick = false; e.stopPropagation(); e.preventDefault(); }
+          }, true);
+        }
+      })();
+    </script>
+  </body>
+</html>
